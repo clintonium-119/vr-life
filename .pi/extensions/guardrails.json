@@ -29,6 +29,14 @@
       {
         "kind": "file",
         "path": "~/src/github/clintonium-119/apo/.apo/04_Templates/*.md"
+      },
+      {
+        "kind": "file",
+        "path": "~/src/github/clintonium-119/apo/docs"
+      },
+      {
+        "kind": "directory",
+        "path": "~/src/github/clintonium-119/apo/packages/apo/docs"
       }
     ]
   },
