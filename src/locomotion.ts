@@ -49,6 +49,8 @@ export function buildLocomotion(
   rig: PlayerRig,
   world: CollisionWorld,
   t: MovementTuning = tuning,
+  /** A hand that is busy (holding a prop) never anchors. */
+  handBlocked: (hand: number) => boolean = () => false,
 ): Locomotion {
   const body = new PlayerBody(world, t);
   const anchors = [new HandAnchor(world, t), new HandAnchor(world, t)];
@@ -91,6 +93,11 @@ export function buildLocomotion(
 
       for (let i = 0; i < 2; i++) {
         hands[i].getWorldPosition(_hand);
+        if (handBlocked(i)) {
+          if (anchors[i].state === 'anchored') anchors[i].release();
+          anchors[i].resetHistory();
+          continue;
+        }
         anchors[i].update(_hand, dt, handEvents);
       }
       const anyAnchored = HandAnchor.combine(anchors, dt, t, _corr);

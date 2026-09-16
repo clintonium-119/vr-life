@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { tuning } from './movementTuning';
 import type { PlayerRig } from './placeholderPlayer';
 
-// Dev-only tools behind the `tools` URL flag: a teleport that moves the
-// player rig root, and a hand-ray visualiser. One deletable module; nothing
+// Dev-only tools behind the `tools` URL flag: a trigger-teleport that moves
+// the player rig root, and a hand-ray visualiser. One deletable module; nothing
 // here is shipped behaviour. Everything it creates lives under one group so
 // removal is a single removeFromParent().
 
@@ -58,9 +58,10 @@ export function buildDevTools(
     line.scale.z = HAND_RAY_LENGTH_M;
     controller.add(line);
     const ray: HandRay = { controller, line, hit: null, hitPoint: new THREE.Vector3() };
-    // SAFETY: WebXRManager dispatches squeezestart on this exact Object3D;
+    // Trigger teleports (the grip is the grab verb).
+    // SAFETY: WebXRManager dispatches selectstart on this exact Object3D;
     // Object3DEventMap does not declare it, hence the EventTarget shape.
-    (controller as unknown as EventTarget).addEventListener('squeezestart', () => teleport(ray));
+    (controller as unknown as EventTarget).addEventListener('selectstart', () => teleport(ray));
     return ray;
   });
 
