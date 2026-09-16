@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "launch": "adb shell am start -a android.intent.action.VIEW -d https://clintonium-119.github.io/vr-life/"
   },
   "dependencies": {
     "three": "^0.186.0"

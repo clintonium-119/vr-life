@@ -16,6 +16,7 @@ Other scripts:
 
 - `npm run typecheck` — TypeScript strict check
 - `npm run lint` — ESLint (typescript-eslint recommended)
+- `npm run launch` — open the deployed site in Quest Browser over ADB
 
 ### Running on the headset
 
@@ -25,8 +26,22 @@ requests `immersive-vr` with the `local-floor` reference space (6DoF,
 floor-anchored). On a desktop without an XR device the entry overlay shows
 an unsupported-device fallback instead.
 
-Headset launch and on-device debugging workflows land in a later phase
-step (GitHub Pages deploy + QR launch; metavr + Chrome remote debugging).
+### Deploy and launch on the headset
+
+Every push to `main` runs `.github/workflows/deploy-pages.yml`: typecheck,
+lint, build, then deploy `dist/` to GitHub Pages at
+<https://clintonium-119.github.io/vr-life/> (the Vite `base` is `/vr-life/`).
+Pages is configured with "GitHub Actions" as the source.
+
+With the headset on ADB (USB or `adb connect <headset-ip>`):
+
+```sh
+npm run launch     # opens the Pages URL in Quest Browser
+```
+
+For the perf harness on the shipped build, run the same intent with
+`?dev=perf` appended to the URL. There is no QR step: open the Pages URL
+once in Quest Browser and bookmark it.
 
 ### Dev flags
 
