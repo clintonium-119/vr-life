@@ -35,6 +35,9 @@ export interface Locomotion {
   events: LocomotionEvents;
   /** Forget all motion (after a dev teleport). */
   teleportReset(): void;
+  /** While set, an external mover owns the feet position (an arrest escort). */
+  setOverride(mover: { position: THREE.Vector3 } | null): void;
+  readonly overridden: boolean;
 }
 
 const MAX_DT = 0.05;
@@ -59,6 +62,7 @@ export function buildLocomotion(
   const tracker = new VelocityTracker(t);
   let wasAnchored = false;
   const lastPlatformVelocity = new THREE.Vector3();
+  let override: { position: THREE.Vector3 } | null = null;
 
   const events: LocomotionEvents = {};
   const handEvents = { slap: (s: number, surf: SurfaceTag) => events.slap?.(s, surf) };
@@ -87,9 +91,32 @@ export function buildLocomotion(
       return anchors[index]?.state === 'anchored';
     },
 
+    get overridden(): boolean {
+      return override !== null;
+    },
+    setOverride(mover): void {
+      override = mover;
+      if (mover === null) this.teleportReset();
+    },
+
     update(rawDt: number): void {
       const dt = Math.min(Math.max(rawDt, 0), MAX_DT);
       if (dt === 0) return;
+      if (override !== null) {
+        // Dragged: hands cannot hold, the feet follow the mover.
+        for (const a of anchors) {
+          a.release();
+          a.resetHistory();
+        }
+        wasAnchored = false;
+        rig.root.position.set(
+          override.position.x - rig.head.position.x,
+          override.position.y - t.eyeHeightOffset,
+          override.position.z - rig.head.position.z,
+        );
+        body.velocity.set(0, 0, 0);
+        return;
+      }
       // Fresh world matrices for the rig's children (poses were written this frame).
       rig.root.updateWorldMatrix(false, true);
 

@@ -38,7 +38,9 @@ export interface MovementAudio {
   /** A plain tone (alarm beeps, bells). */
   tone(freq: number, seconds: number, gain?: number): void;
   /** School-day cues. */
-  chime(kind: 'correct' | 'wrong' | 'bell' | 'score' | 'whoop' | 'cash'): void;
+  chime(kind: 'correct' | 'wrong' | 'bell' | 'score' | 'whoop' | 'cash' | 'thwack' | 'pop'): void;
+  /** Police siren loop on/off. */
+  siren(on: boolean): void;
   /** Per frame: follows body speed for the wind. */
   update(): void;
   dispose(): void;
@@ -153,7 +155,31 @@ export function buildMovementAudio(
     };
   }
 
+  let sirenOsc: OscillatorNode | null = null;
+  let sirenGain: GainNode | null = null;
+  let sirenOn = false;
+  let sirenClock = 0;
+  let sirenHigh = false;
+
+  function ensureSiren(c: AudioContext): void {
+    if (sirenOsc !== null) return;
+    sirenOsc = c.createOscillator();
+    sirenOsc.type = 'sawtooth';
+    sirenOsc.frequency.value = 600;
+    sirenGain = c.createGain();
+    sirenGain.gain.value = 0;
+    sirenOsc.connect(sirenGain).connect(c.destination);
+    sirenOsc.start();
+  }
+
   return {
+    siren(on): void {
+      sirenOn = on;
+      const c = running();
+      if (c === null) return;
+      ensureSiren(c);
+      sirenGain?.gain.setTargetAtTime(on ? 0.12 : 0, c.currentTime, 0.2);
+    },
     tone(freq, seconds, gain = 0.2): void {
       tone(freq, seconds, gain);
     },
@@ -186,6 +212,15 @@ export function buildMovementAudio(
           tone(1400, 0.06, 0.15, 'square', 0.09);
           tone(1900, 0.25, 0.15, 'sine', 0.18);
           break;
+        case 'thwack':
+          burst(200, 1.2, 0.12, 0.6, 'lowpass');
+          tone(140, 0.12, 0.2, 'triangle');
+          break;
+        case 'pop':
+          burst(1800, 2, 0.08, 0.5, 'bandpass');
+          tone(700, 0.08, 0.2, 'square');
+          tone(350, 0.15, 0.15, 'square', 0.08);
+          break;
       }
     },
     bounce(speed, surface): void {
@@ -215,7 +250,17 @@ export function buildMovementAudio(
 
     update(): void {
       const c = running();
-      if (c === null || windGain === null) return;
+      if (c === null) return;
+      if (sirenOn) {
+        ensureSiren(c);
+        sirenClock += 1 / 60;
+        if (sirenClock >= 0.45) {
+          sirenClock = 0;
+          sirenHigh = !sirenHigh;
+          sirenOsc?.frequency.setTargetAtTime(sirenHigh ? 900 : 600, c.currentTime, 0.05);
+        }
+      }
+      if (windGain === null) return;
       const speed = locomotion.velocity.length();
       const target =
         Math.min(1, Math.max(0, (speed - t.windStartSpeed) / (t.speedCap - t.windStartSpeed))) *

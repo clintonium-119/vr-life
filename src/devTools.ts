@@ -28,6 +28,8 @@ export function buildDevTools(
   rig: PlayerRig,
   target: THREE.Object3D,
   onTeleport?: () => void,
+  /** When the controller's hand holds a prop, the trigger is the prop's (toy gun), not a teleport. */
+  holding?: (controllerIndex: number) => boolean,
 ): DevTools {
   const group = new THREE.Group();
   group.name = 'devTools';
@@ -61,7 +63,10 @@ export function buildDevTools(
     // Trigger teleports (the grip is the grab verb).
     // SAFETY: WebXRManager dispatches selectstart on this exact Object3D;
     // Object3DEventMap does not declare it, hence the EventTarget shape.
-    (controller as unknown as EventTarget).addEventListener('selectstart', () => teleport(ray));
+    (controller as unknown as EventTarget).addEventListener('selectstart', () => {
+      if (holding?.(index) === true) return;
+      teleport(ray);
+    });
     return ray;
   });
 

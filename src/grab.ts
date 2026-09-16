@@ -29,6 +29,10 @@ export interface Grab {
   releaseGrip(hand: number): void;
   /** Take a prop out of whichever hand holds it without a throw. */
   drop(prop: Prop): void;
+  /** Let go of everything (an arrest). */
+  dropAll(): void;
+  /** Tracked world velocity of a hand, m/s. */
+  handVelocity(hand: number): THREE.Vector3;
   readonly stowed: readonly Prop[];
   readonly backSocket: THREE.Object3D;
   events: GrabEvents;
@@ -161,11 +165,20 @@ export function buildGrab(
     prop.velocity.set(0, 0, 0);
   }
 
+  function dropAll(): void {
+    for (let i = 0; i < 2; i++) {
+      const prop = heldProps[i];
+      if (prop !== null) drop(prop);
+    }
+  }
+
   return {
     events,
     stowed,
     backSocket,
     drop,
+    dropAll,
+    handVelocity: (hand) => trackers[hand].velocity,
     handHolding: (hand) => heldProps[hand] !== null,
     held: (hand) => heldProps[hand],
     pressGrip,

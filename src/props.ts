@@ -35,7 +35,8 @@ export interface PropSpec {
 export type ShopEffect =
   | { kind: 'dye'; color: number }
   | { kind: 'accessory'; slot: 0 | 1; item: 'cap' | 'band' | 'scarf' }
-  | { kind: 'snack' };
+  | { kind: 'snack' }
+  | { kind: 'gun' };
 
 export interface PropEvents {
   bounce?(prop: Prop, speedInto: number, surface: SurfaceTag): void;

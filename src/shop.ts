@@ -202,6 +202,10 @@ export interface Shops {
   group: THREE.Group;
   shops: Shop[];
   update(): void;
+  /** Confiscation: the item goes back to its shelf, unpaid. */
+  returnToShelf(itemId: string): void;
+  /** The prop for a shop item id, if any. */
+  propFor(itemId: string): Prop | null;
 }
 
 export function buildShops(
@@ -278,17 +282,30 @@ export function buildShops(
     progress.spend(prop.spec.price);
     audio.chime('cash');
     console.info(`[vr-life] shop: bought ${prop.spec.id} for ${prop.spec.price}`);
-    if (prop.spec.effect.kind === 'snack') {
-      prop.paid = true; // yours to keep (and throw)
+    if (prop.spec.effect.kind === 'snack' || prop.spec.effect.kind === 'gun') {
+      prop.paid = true; // yours to keep
     } else {
       apply(prop.spec.effect);
       prop.resetToHome(); // the shelf stays stocked
     }
   };
 
+  function propFor(itemId: string): Prop | null {
+    for (const [prop, entry] of byProp) if (entry.item.id === itemId) return prop;
+    return null;
+  }
+
   return {
     group,
     shops,
+    propFor,
+    returnToShelf(itemId): void {
+      const prop = propFor(itemId);
+      if (prop === null) return;
+      grab.drop(prop);
+      prop.paid = false;
+      prop.resetToHome();
+    },
     update(): void {
       for (const [prop, entry] of byProp) {
         if (shouldRecall(prop, entry.shop)) prop.resetToHome();

@@ -10,7 +10,7 @@ import { tuning, type MovementTuning } from './movementTuning';
 // shopkeepers) sway in place; any NPC can be knocked over into a dazed
 // sit, then dusts off and resumes. No shared state, no pathfinding.
 
-export type NpcRole = 'pedestrian' | 'shopkeeper' | 'teacher';
+export type NpcRole = 'pedestrian' | 'shopkeeper' | 'teacher' | 'police';
 export type NpcState = 'walk' | 'pause' | 'react' | 'stand';
 
 export interface NpcSpec {
@@ -102,6 +102,14 @@ export class Npc {
     this.timer = 0;
     this.knockedOver += 1;
     this.velocity.set(0, 0, 0);
+  }
+
+  /** Slapstick shove along a horizontal direction (the toy gun's pop). */
+  shove(direction: THREE.Vector3, metres: number): void {
+    const len = Math.hypot(direction.x, direction.z);
+    if (len < 1e-6) return;
+    this.position.x += (direction.x / len) * metres;
+    this.position.z += (direction.z / len) * metres;
   }
 
   private target(): THREE.Vector3 {
