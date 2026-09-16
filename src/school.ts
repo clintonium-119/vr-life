@@ -16,13 +16,15 @@ import { PLACES, emptyDistrict, type BuiltDistrict } from './townPlan';
 // lockers, three classrooms opening onto it, an attached gym hall, and the
 // bus drop-off outside on the avenue.
 
+/** School block centre z: front wall at −24, the drop-off and spawn in front. */
+export const SCHOOL_BLOCK_Z = -34;
 export const CLASSROOM_W = 10;
 export const CLASSROOM_D = 8;
 
 export function buildSchool(): BuiltDistrict {
   const d = emptyDistrict('school');
   const sx = PLACES.school[0];
-  const sz = PLACES.school[2] - 10; // block centre
+  const sz = SCHOOL_BLOCK_Z; // block centre (the place is the spawn in front of it)
   const W = 44;
   const D = 20;
 
