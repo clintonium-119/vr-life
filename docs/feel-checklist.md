@@ -56,6 +56,16 @@ sanity bound (`smoke:crowd` fails above 400), not the device number.
 Silhouette tuning lives in `GORILLA_PROPORTIONS` (`src/gorilla.ts`); pose
 knobs are in the table below.
 
+## Phase 4: art pipeline and home
+
+| #   | Item                                                                                                                | Pass | Notes / measured on device |
+| --- | ------------------------------------------------------------------------------------------------------------------- | ---- | -------------------------- |
+| 28  | Bedroom → bus stop in 30–60 s at the frame floor (harness on, no warning)                                           | [ ]  | time: __ s                 |
+| 29  | First-look reaction (fresh eyes, first load): "this looks good"                                                     | [ ]  |                            |
+| 30  | Every surface in the block answers "can I push off this?" (fences, trees, posts, crates, shelter, porch, furniture) | [ ]  |                            |
+| 31  | The block sits inside `docs/district-budget.md` (device draw calls, texture, geometry recorded)                     | [ ]  | calls both eyes: __        |
+| 32  | Interiors are traversable at speed: 3.2 m ceilings, 1.4 m doorways, the shelf climb to the ceiling                  | [ ]  |                            |
+
 ## Knobs (`src/movementTuning.ts`)
 
 | Knob                  | Unit | Default | Turn it…                                                                     |
