@@ -17,6 +17,7 @@ import { parseLook } from './appearance';
 import { buildGorillaRig } from './gorillaRig';
 import { buildGorillaCrowd, type GorillaCrowd } from './gorillaCrowd';
 import { buildSchoolDay } from './schoolDay';
+import { buildTownLife } from './townLife';
 
 const container = document.getElementById('app') as HTMLDivElement;
 const overlay = document.getElementById('entry-overlay') as HTMLDivElement;
@@ -90,6 +91,18 @@ const schoolDay = buildSchoolDay(
   location.search,
 );
 
+// Town life: pedestrians and shops.
+const townLife = buildTownLife(
+  scene,
+  player,
+  worldBuilt,
+  propWorld,
+  grab,
+  locomotion,
+  schoolDay.progress,
+  audio,
+);
+
 // Crowd (dev flag `crowd`): scripted gorillas for the frame-cost check.
 const crowd: GorillaCrowd | null = devFlags.crowd ? buildGorillaCrowd(scene) : null;
 
@@ -111,7 +124,7 @@ const desktopDrive: DesktopDrive | null =
         propWorld,
         worldBuilt.doorZ,
         () =>
-          `chunks ${worldBuilt.chunks.visibleCount}/${worldBuilt.chunks.total} day ${schoolDay.day.phase}`,
+          `chunks ${worldBuilt.chunks.visibleCount}/${worldBuilt.chunks.total} day ${schoolDay.day.phase} npcs ${townLife.npcs.visibleCount}/${townLife.npcs.npcs.length}`,
       )
     : null;
 
@@ -147,6 +160,7 @@ renderer.setAnimationLoop((time: number) => {
   gorillaRig.update(dt);
   schoolDay.update(dt);
   worldBuilt.chunks.update(camera.getWorldPosition(playerPos));
+  townLife.update(dt, playerPos);
   if (crowd !== null) crowd.update(dt, playerPos);
   propWorld.step(dt, world, tuning, propEvents, camera.getWorldPosition(playerPos));
   testProps.update(dt);

@@ -27,7 +27,7 @@ export function buildTownCentre(): BuiltDistrict {
     storeys: 1,
     storeyHeight: 6,
     tiles: 'concrete',
-    doors: [{ side: '-z', width: 3, height: 3.2 }],
+    doors: [{ side: '+z', width: 3, height: 3.2 }],
     stairs: 'none',
     name: 'grocery',
   });
@@ -67,7 +67,7 @@ export function buildTownCentre(): BuiltDistrict {
     storeys: 1,
     storeyHeight: 4,
     tiles: 'brick',
-    doors: [{ side: '-z', width: 2 }],
+    doors: [{ side: '+z', width: 2 }],
     stairs: 'none',
     name: 'convenience',
   });

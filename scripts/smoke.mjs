@@ -54,6 +54,7 @@ const send = (method, params = {}) => ws.send(JSON.stringify({ id: ++id, method,
 const positions = [];
 const propSamples = [];
 const callSamples = [];
+let lastNpcs = '';
 let failures = 0;
 const sawRequired = new Set();
 ws.onmessage = (e) => {
@@ -67,6 +68,8 @@ ws.onmessage = (e) => {
     if (rest) propSamples.push([Number(rest[1]), Number(rest[2])]);
     const calls = /calls (\d+)/.exec(text);
     if (calls) callSamples.push(Number(calls[1]));
+    const npcs = /npcs (\d+)\/(\d+)/.exec(text);
+    if (npcs) lastNpcs = `${npcs[1]}/${npcs[2]}`;
     for (const r of required) if (text.includes(r)) sawRequired.add(r);
     if (/NaN/.test(text)) failures++;
     if (m.params.type === 'error') failures++;
@@ -96,6 +99,7 @@ const callsOk = lastCalls <= maxCalls;
 console.log(
   `smoke: ${positions.length} position samples, moved ${moved.toFixed(2)} m, ` +
     `props at rest ${lastProps[0]}/${lastProps[1]}, draw calls ${lastCalls}` +
+    (lastNpcs ? `, npcs ${lastNpcs}` : '') +
     (Number.isFinite(maxCalls) ? ` (max ${maxCalls})` : '') +
     `, ${failures} failure(s)` +
     required.map((r) => `, required "${r}": ${sawRequired.has(r) ? 'seen' : 'MISSING'}`).join(''),

@@ -38,7 +38,7 @@ export interface MovementAudio {
   /** A plain tone (alarm beeps, bells). */
   tone(freq: number, seconds: number, gain?: number): void;
   /** School-day cues. */
-  chime(kind: 'correct' | 'wrong' | 'bell' | 'score'): void;
+  chime(kind: 'correct' | 'wrong' | 'bell' | 'score' | 'whoop' | 'cash'): void;
   /** Per frame: follows body speed for the wind. */
   update(): void;
   dispose(): void;
@@ -175,6 +175,16 @@ export function buildMovementAudio(
           tone(520, 0.1, 0.2);
           tone(780, 0.1, 0.2, 'sine', 0.1);
           tone(1040, 0.25, 0.2, 'sine', 0.2);
+          break;
+        case 'whoop':
+          tone(900, 0.12, 0.2, 'triangle');
+          tone(600, 0.12, 0.2, 'triangle', 0.1);
+          tone(300, 0.3, 0.22, 'triangle', 0.2);
+          break;
+        case 'cash':
+          tone(1400, 0.06, 0.15, 'square');
+          tone(1400, 0.06, 0.15, 'square', 0.09);
+          tone(1900, 0.25, 0.15, 'sine', 0.18);
           break;
       }
     },

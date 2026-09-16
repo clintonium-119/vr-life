@@ -26,7 +26,16 @@ export interface PropSpec {
   important?: boolean;
   /** What it sounds like when it hits something. */
   surface: SurfaceTag;
+  /** Shop goods: price and what buying it does. */
+  price?: number;
+  effect?: ShopEffect;
+  shopId?: string;
 }
+
+export type ShopEffect =
+  | { kind: 'dye'; color: number }
+  | { kind: 'accessory'; slot: 0 | 1; item: 'cap' | 'band' | 'scarf' }
+  | { kind: 'snack' };
 
 export interface PropEvents {
   bounce?(prop: Prop, speedInto: number, surface: SurfaceTag): void;
@@ -50,6 +59,8 @@ export class Prop {
   readonly angularVelocity = new Vector3();
   readonly home: Vector3;
   state: PropState = 'free';
+  /** Shop goods: true once paid for. */
+  paid = false;
   resting = false;
   /** Seconds spent resting (free, unheld). */
   restTime = 0;

@@ -16,7 +16,8 @@
     "smoke:crowd": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?world=test&dev=perf,tools,crowd&drive=auto' 9 --max-calls 400",
     "smoke:home": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto' 10 --require 'door crossed'",
     "smoke:town": "for p in bedroom officeRoof hospitalRoof school farm forest; do node scripts/smoke.mjs \"http://localhost:4173/vr-life/?dev=perf,tools&drive=auto&spawn=$p\" 7 --max-calls 400 || exit 1; done",
-    "smoke:day": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto' 10 --require 'day: rush' --require 'door crossed'"
+    "smoke:day": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto' 10 --require 'day: rush' --require 'door crossed'",
+    "smoke:shop": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto&spawn=grocery&day=done' 7 --max-calls 400"
   },
   "dependencies": {
     "three": "^0.186.0"
