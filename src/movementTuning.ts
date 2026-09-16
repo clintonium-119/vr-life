@@ -62,6 +62,30 @@ export const tuning = {
   recallDistance: 6,
   /** …after this long at rest, s. */
   recallSeconds: 10,
+
+  // ---- character pose ----
+  /** Torso lean into horizontal motion, degrees per m/s. */
+  leanPerMps: 3,
+  /** Lean clamp, degrees. */
+  leanMaxDeg: 25,
+  /** Sag (crouch, 0..1) the body eases toward while airborne. */
+  sagAirborne: 0.35,
+  /** Extra sag per m/s of landing impact, decays after touchdown. */
+  sagLanding: 0.08,
+  /** Horizontal distance per knuckle-walk gait cycle, m. */
+  gaitStrideM: 1.2,
+  /** Hip bob amplitude at full gait, m. */
+  gaitBobM: 0.04,
+  /** Torso (shoulder line) below the head, m. Keeps the chest out of view. */
+  torsoBelowHeadM: 0.35,
+  /** Torso behind the head, m. */
+  torsoBehindHeadM: 0.15,
+  /** Shoulder-to-shoulder width, m. */
+  shoulderWidthM: 0.5,
+  /** Upper arm length, m. */
+  upperArmM: 0.32,
+  /** Forearm length, m. */
+  forearmM: 0.38,
 };
 
 export type MovementTuning = typeof tuning;
