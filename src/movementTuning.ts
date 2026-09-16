@@ -38,6 +38,30 @@ export const tuning = {
   landingThudSpeed: 2.5,
   /** Wind starts to be audible above this speed, m/s. */
   windStartSpeed: 4,
+
+  // ---- props (grab & objects) ----
+  /** Grab reach: a free prop whose centre is within this of the hand, m. */
+  grabRadius: 0.18,
+  /** Held prop sits this far along the hand's forward axis, m. */
+  holdOffset: 0.05,
+  /** Release velocity = tracked hand velocity × this. */
+  throwVelocityScale: 1.0,
+  /** Releasing a small prop within this of the back socket stows it, m. */
+  stowRadius: 0.3,
+  /** Max body-stub roll toward a carried large prop, degrees. */
+  carryLeanDeg: 12,
+  /** Post-bounce normal speed below this settles to zero, m/s. */
+  propRestThreshold: 0.3,
+  /** Restitution used when a prop spec gives none. */
+  propRestitutionDefault: 0.6,
+  /** Props below this respawn at home, m. */
+  worldFloorY: -5,
+  /** Props farther than this from the origin on x or z respawn, m. */
+  worldHalfExtent: 40,
+  /** Important props resting farther than this from the player recall, m. */
+  recallDistance: 6,
+  /** …after this long at rest, s. */
+  recallSeconds: 10,
 };
 
 export type MovementTuning = typeof tuning;
