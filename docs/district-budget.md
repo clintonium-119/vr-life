@@ -40,6 +40,19 @@ body, and any other gorillas.
 | Draw calls at spawn (bedroom, single view) | 8          | chunk mesh + visible gorilla parts + props                   |
 | Draw calls after the door run              | 3–5        | most of the block is behind the camera                       |
 
+## Full town: host measurements per spawn (2026-09-16, headless single view)
+
+Startup: 21 chunks (11 districts/skyways + 10 interiors); see the console
+line `[vr-life] world home: …` for parts, vertices, colliders and catwalks.
+
+| Spawn        | Chunks visible / total | Draw calls (single view) |
+| ------------ | ---------------------- | ------------------------ |
+| bedroom      | 12 / 21                | 8                        |
+| officeRoof   | 10 / 21                | 6                        |
+| hospitalRoof | 7 / 21                 | 5                        |
+
+`npm run smoke:town` re-measures these and fails above 400 calls.
+
 ## Device measurements (final headset session)
 
 | Quantity                                             | Measured | Notes                               |

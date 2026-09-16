@@ -66,6 +66,16 @@ knobs are in the table below.
 | 31  | The block sits inside `docs/district-budget.md` (device draw calls, texture, geometry recorded)                     | [ ]  | calls both eyes: __        |
 | 32  | Interiors are traversable at speed: 3.2 m ceilings, 1.4 m doorways, the shelf climb to the ceiling                  | [ ]  |                            |
 
+## Phase 5: the full world
+
+| #   | Item                                                                                              | Pass | Notes / measured on device |
+| --- | ------------------------------------------------------------------------------------------------- | ---- | -------------------------- |
+| 33  | Farm → forest → town centre → farm: one continuous space, no transitions, always solid            | [ ]  |                            |
+| 34  | Frame floor in every district and interior, at speed, and from the office and hospital roofs      | [ ]  | `viewDistanceM`: __        |
+| 35  | Rooftop route usable end to end (house → water tower → office → hospital) and fun                 | [ ]  |                            |
+| 36  | No interior feels like a confined misery at speed (school hallway, hospital wards, office floors) | [ ]  |                            |
+| 37  | The cabin is found unaided, or its hiding place is documented and defensible (`docs/town-map.md`) | [ ]  |                            |
+
 ## Knobs (`src/movementTuning.ts`)
 
 | Knob                  | Unit | Default | Turn it…                                                                     |
