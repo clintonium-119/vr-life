@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { devFlags } from './config';
 import { buildTestSpace } from './testSpace';
+import { buildPlayer } from './placeholderPlayer';
 
 const container = document.getElementById('app') as HTMLDivElement;
 const overlay = document.getElementById('entry-overlay') as HTMLDivElement;
@@ -29,6 +30,11 @@ camera.position.set(0, 1.6, 2);
 // Debug climbing volume (ground, walls, ledges, overhangs, launch gap);
 // lighting lives inside the group.
 scene.add(buildTestSpace(scene));
+
+// Placeholder player. Hands are parented to the XR grip-space objects, which
+// the WebXRManager updates from the input-source pose every frame — that is
+// the whole "driving": 1:1 passthrough, no per-frame pose code here.
+buildPlayer(scene, renderer); // body group is the teleport-rig target from a later dev-tools step
 
 renderer.setAnimationLoop(() => {
   renderer.render(scene, camera);
