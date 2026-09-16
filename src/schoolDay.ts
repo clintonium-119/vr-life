@@ -1,0 +1,117 @@
+import * as THREE from 'three';
+import { buildAlarm, type Alarm } from './alarm';
+import { buildBus, type Bus } from './bus';
+import type { CollisionWorld } from './collision';
+import { DayState, type DayPhase } from './dayState';
+import type { Grab } from './grab';
+import { ALARM_CLOCK_POS } from './homeHouse';
+import type { Locomotion } from './locomotion';
+import type { MovementAudio } from './movementAudio';
+import type { PlayerRig } from './placeholderPlayer';
+import { Progress } from './progress';
+import { PLACES } from './townPlan';
+import type { World } from './world';
+import { buildWristDisplays } from './wristDisplay';
+
+// The objective spine wired to the scene: alarm → rush (backpack, out the
+// door, at the stop) → bus ride → school. Classes and gym attach through
+// buildClassrooms / buildGymClass (see schoolDay.attach). Audio cues for
+// every transition; a dev `?day=<phase>` hook jumps the state for testing.
+
+export interface SchoolDay {
+  day: DayState;
+  progress: Progress;
+  bus: Bus | null;
+  update(dt: number): void;
+}
+
+const STOP_RADIUS_M = 4;
+const _head = new THREE.Vector3();
+const _body = new THREE.Vector3();
+
+export function parseDayJump(query: string): DayPhase | null {
+  const raw = new URLSearchParams(query).get('day');
+  return raw === 'rush' || raw === 'ride' || raw === 'school' || raw === 'done' ? raw : null;
+}
+
+export function buildSchoolDay(
+  scene: THREE.Scene,
+  rig: PlayerRig,
+  world: World,
+  collision: CollisionWorld,
+  grab: Grab,
+  locomotion: Locomotion,
+  audio: MovementAudio,
+  query = '',
+): SchoolDay {
+  const progress = new Progress();
+  const day = new DayState(progress);
+  buildWristDisplays(rig, progress);
+
+  // Only the home world has a day; the test space is for movement tuning.
+  const isTown = world.kind === 'home';
+  const alarm: Alarm | null = isTown
+    ? buildAlarm(rig, day, audio, new THREE.Vector3(...ALARM_CLOCK_POS), world.spawn)
+    : null;
+  const bus: Bus | null = isTown ? buildBus(scene, collision) : null;
+
+  // Objectives from the scene.
+  const previousGrab = grab.events.grab;
+  grab.events.grab = (prop, hand) => {
+    previousGrab?.(prop, hand);
+    if (prop.spec.id === 'backpack') day.grabBackpack();
+  };
+  day.events.phase = (from, to) => {
+    console.info(`[vr-life] day: ${to} (from ${from})`);
+    if (to === 'school') audio.chime('bell');
+    if (to === 'done') audio.chime('bell');
+  };
+  day.events.backpack = () => {
+    console.info('[vr-life] backpack grabbed');
+    audio.chime('score');
+  };
+  day.events.lateBus = () => console.info('[vr-life] late for the bus');
+  day.events.questionResult = (_subject, correct) => audio.chime(correct ? 'correct' : 'wrong');
+  day.events.gymScore = () => audio.chime('score');
+  day.events.classPassed = (subject) => console.info(`[vr-life] class passed: ${subject}`);
+  day.events.gymPassed = () => console.info('[vr-life] gym passed');
+
+  // Dev jump: skip ahead for testing (tools flag not required; harmless).
+  const jump = parseDayJump(query);
+  if (jump !== null) {
+    day.wake();
+    if (jump === 'ride' || jump === 'school' || jump === 'done') day.boardBus();
+    if (jump === 'school' || jump === 'done') day.arriveSchool();
+    if (jump === 'done') {
+      for (const s of ['math', 'science', 'history'] as const)
+        for (let i = 0; i < 3; i++) day.answer(s, true);
+      for (let i = 0; i < 3; i++) day.score();
+    }
+  }
+
+  const stop = new THREE.Vector3(...PLACES.busStop);
+  const dropOff = new THREE.Vector3(...PLACES.schoolDropOff);
+
+  return {
+    day,
+    progress,
+    bus,
+    update(dt: number): void {
+      day.tick(dt);
+      alarm?.update(dt);
+      rig.head.getWorldPosition(_head);
+      // Body position ≈ feet under the head.
+      _body.set(_head.x, rig.root.position.y + 0.8, _head.z);
+      if (day.phase === 'rush') {
+        if (!day.leftHouse && world.doorZ !== null && _head.z < world.doorZ) day.markLeftHouse();
+        if (!day.atStop && Math.hypot(_head.x - stop.x, _head.z - stop.z) < STOP_RADIUS_M)
+          day.markAtStop();
+        // Walking to school counts too (the late option).
+        if (Math.hypot(_head.x - dropOff.x, _head.z - dropOff.z) < STOP_RADIUS_M)
+          day.arriveSchool();
+      }
+      bus?.update(dt, day, _body);
+      void locomotion;
+    },
+  };
+}

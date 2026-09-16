@@ -44,6 +44,7 @@ const _hand = new THREE.Vector3();
 const _corr = new THREE.Vector3();
 const _target = new THREE.Vector3();
 const _before = new THREE.Vector3();
+const _carry = new THREE.Vector3();
 
 export function buildLocomotion(
   rig: PlayerRig,
@@ -57,6 +58,7 @@ export function buildLocomotion(
   const hands = [rig.handLeft, rig.handRight];
   const tracker = new VelocityTracker(t);
   let wasAnchored = false;
+  const lastPlatformVelocity = new THREE.Vector3();
 
   const events: LocomotionEvents = {};
   const handEvents = { slap: (s: number, surf: SurfaceTag) => events.slap?.(s, surf) };
@@ -118,6 +120,16 @@ export function buildLocomotion(
         bodyTarget(_target);
         body.position.copy(_target);
         body.step(dt, false, bodyEvents);
+        // Standing on a mover: ride with it; stepping off keeps its velocity.
+        const platform = body.groundCollider?.velocity;
+        if (platform !== undefined) {
+          _carry.copy(platform).multiplyScalar(dt);
+          body.position.add(_carry);
+          lastPlatformVelocity.copy(platform);
+        } else if (lastPlatformVelocity.lengthSq() > 0) {
+          body.velocity.add(lastPlatformVelocity);
+          lastPlatformVelocity.set(0, 0, 0);
+        }
       }
       // Whatever the body moved (gravity, slide, nudge), the whole rig follows.
       _before.copy(body.position).sub(_target);

@@ -65,7 +65,7 @@ export function buildDesktopDrive(
   props: PropWorld,
   /** A z plane whose first crossing is logged (the front door), if any. */
   doorZ: number | null = null,
-  /** Extra text appended to the per-second log (chunk counts). */
+  /** Extra text appended to the per-second log (chunk counts, day phase). */
   extraLog: (() => string) | null = null,
 ): DesktopDrive {
   let doorCrossed = false;

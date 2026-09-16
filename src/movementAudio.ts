@@ -35,6 +35,10 @@ export interface MovementAudio {
   bounce(speed: number, surface: SurfaceTag): void;
   /** A hand closed on a prop. */
   catch(): void;
+  /** A plain tone (alarm beeps, bells). */
+  tone(freq: number, seconds: number, gain?: number): void;
+  /** School-day cues. */
+  chime(kind: 'correct' | 'wrong' | 'bell' | 'score'): void;
   /** Per frame: follows body speed for the wind. */
   update(): void;
   dispose(): void;
@@ -123,7 +127,57 @@ export function buildMovementAudio(
   locomotion.events.bump = (speed) => thud(speed, 0.6);
   locomotion.events.landed = (speed) => thud(speed, 1);
 
+  function tone(
+    freq: number,
+    seconds: number,
+    gain = 0.2,
+    type: OscillatorType = 'sine',
+    at = 0,
+  ): void {
+    const c = running();
+    if (c === null) return;
+    const osc = c.createOscillator();
+    osc.type = type;
+    osc.frequency.value = freq;
+    const env = c.createGain();
+    const start = c.currentTime + at;
+    env.gain.setValueAtTime(0.0001, start);
+    env.gain.exponentialRampToValueAtTime(gain, start + 0.01);
+    env.gain.exponentialRampToValueAtTime(0.0001, start + seconds);
+    osc.connect(env).connect(c.destination);
+    osc.start(start);
+    osc.stop(start + seconds + 0.02);
+    osc.onended = () => {
+      osc.disconnect();
+      env.disconnect();
+    };
+  }
+
   return {
+    tone(freq, seconds, gain = 0.2): void {
+      tone(freq, seconds, gain);
+    },
+    chime(kind): void {
+      switch (kind) {
+        case 'correct':
+          tone(660, 0.12, 0.2);
+          tone(990, 0.2, 0.2, 'sine', 0.12);
+          break;
+        case 'wrong':
+          tone(180, 0.3, 0.18, 'square');
+          break;
+        case 'bell':
+          tone(880, 0.5, 0.15);
+          tone(1100, 0.5, 0.12, 'sine', 0.3);
+          tone(1320, 0.6, 0.1, 'sine', 0.6);
+          break;
+        case 'score':
+          tone(520, 0.1, 0.2);
+          tone(780, 0.1, 0.2, 'sine', 0.1);
+          tone(1040, 0.25, 0.2, 'sine', 0.2);
+          break;
+      }
+    },
     bounce(speed, surface): void {
       surfaceBurst(speed, surface, 0.7);
     },

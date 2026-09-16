@@ -30,6 +30,8 @@ export interface BoxCollider {
   /** Rotation + translation only, box space -> world. Refresh with updateCollider(). */
   boxToWorld: Matrix4;
   worldToBox: Matrix4;
+  /** World velocity for movers (platforms carry what stands on them). */
+  velocity?: Vector3;
 }
 
 export interface Contact {

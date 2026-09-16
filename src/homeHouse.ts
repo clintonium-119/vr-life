@@ -11,6 +11,9 @@ export const HOUSE_WIDTH = 9;
 export const HOUSE_DEPTH = 7;
 export const WALL_HEIGHT = 3.2;
 
+/** World position of the alarm clock (house at the origin). */
+export const ALARM_CLOCK_POS: [number, number, number] = [-1.7, HOUSE_FLOOR_Y + 0.66, 3.0];
+
 export interface HomeHouse {
   spawn: [number, number, number];
   spawnYaw: number;

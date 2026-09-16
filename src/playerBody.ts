@@ -1,5 +1,5 @@
 import { Vector3 } from 'three';
-import { makeContact, type CollisionWorld, type SurfaceTag } from './collision';
+import { makeContact, type BoxCollider, type CollisionWorld, type SurfaceTag } from './collision';
 import { tuning, type MovementTuning } from './movementTuning';
 
 // The body: one sphere hung below the head. Gravity whenever no hand holds,
@@ -28,6 +28,8 @@ export class PlayerBody {
   readonly position = new Vector3();
   readonly velocity = new Vector3();
   grounded = false;
+  /** The collider under the body this step (null when airborne). */
+  groundCollider: BoxCollider | null = null;
 
   constructor(
     private readonly world: CollisionWorld,
@@ -62,6 +64,7 @@ export class PlayerBody {
 
     const wasGrounded = this.grounded;
     let grounded = false;
+    let groundCollider: BoxCollider | null = null;
     let landingSpeed = 0;
     let landingSurface: SurfaceTag = 'ground';
     let bumpSpeed = 0;
@@ -75,7 +78,10 @@ export class PlayerBody {
           any = true;
           this.position.addScaledVector(c.normal, c.depth);
           const isGround = c.normal.y > GROUND_NORMAL_Y;
-          if (isGround) grounded = true;
+          if (isGround) {
+            grounded = true;
+            groundCollider = c.collider;
+          }
           const into = -v.dot(c.normal);
           if (into <= 0) return;
           v.addScaledVector(c.normal, into); // slide: drop the into-surface component
@@ -96,6 +102,7 @@ export class PlayerBody {
     _contact.collider = null;
 
     this.grounded = grounded;
+    this.groundCollider = groundCollider;
     if (!wasGrounded && grounded && landingSpeed >= t.landingThudSpeed) {
       events?.landed?.(landingSpeed, landingSurface);
     }

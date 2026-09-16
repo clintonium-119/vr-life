@@ -16,6 +16,7 @@ import { tuning } from './movementTuning';
 import { parseLook } from './appearance';
 import { buildGorillaRig } from './gorillaRig';
 import { buildGorillaCrowd, type GorillaCrowd } from './gorillaCrowd';
+import { buildSchoolDay } from './schoolDay';
 
 const container = document.getElementById('app') as HTMLDivElement;
 const overlay = document.getElementById('entry-overlay') as HTMLDivElement;
@@ -76,6 +77,18 @@ const propEvents = {
 const playerPos = new THREE.Vector3();
 renderer.domElement.addEventListener('pointerdown', () => audio.resume(), { once: true });
 
+// The school day: alarm, rush, bus, classes, gym; wrist displays.
+const schoolDay = buildSchoolDay(
+  scene,
+  player,
+  worldBuilt,
+  world,
+  grab,
+  locomotion,
+  audio,
+  location.search,
+);
+
 // Crowd (dev flag `crowd`): scripted gorillas for the frame-cost check.
 const crowd: GorillaCrowd | null = devFlags.crowd ? buildGorillaCrowd(scene) : null;
 
@@ -96,7 +109,8 @@ const desktopDrive: DesktopDrive | null =
         grab,
         propWorld,
         worldBuilt.doorZ,
-        () => `chunks ${worldBuilt.chunks.visibleCount}/${worldBuilt.chunks.total}`,
+        () =>
+          `chunks ${worldBuilt.chunks.visibleCount}/${worldBuilt.chunks.total} day ${schoolDay.day.phase}`,
       )
     : null;
 
@@ -130,6 +144,7 @@ renderer.setAnimationLoop((time: number) => {
   grab.update(dt);
   locomotion.update(dt);
   gorillaRig.update(dt);
+  schoolDay.update(dt);
   worldBuilt.chunks.update(camera.getWorldPosition(playerPos));
   if (crowd !== null) crowd.update(dt);
   propWorld.step(dt, world, tuning, propEvents, camera.getWorldPosition(playerPos));
