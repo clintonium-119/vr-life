@@ -26,7 +26,7 @@ describe('atlas tile table', () => {
     }
   });
 
-  it('has twelve tiles', () => {
-    expect(TILE_NAMES).toHaveLength(12);
+  it('has fourteen tiles', () => {
+    expect(TILE_NAMES).toHaveLength(14);
   });
 });

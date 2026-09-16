@@ -23,6 +23,8 @@ export const TILES = {
   window: { x: 1, y: 2 },
   door: { x: 2, y: 2 },
   trim: { x: 3, y: 2 },
+  metal: { x: 0, y: 3 },
+  gravel: { x: 1, y: 3 },
 } as const;
 
 export type TileName = keyof typeof TILES;
@@ -205,6 +207,21 @@ const GENERATORS: Record<TileName, (ctx: Ctx, rnd: () => number) => void> = {
   },
   trim(ctx, rnd) {
     grain(ctx, rnd, [236, 232, 222], 6, 200);
+  },
+  metal(ctx, rnd) {
+    grain(ctx, rnd, [118, 124, 132], 14, 500);
+    for (let y = 0; y < TILE_PX; y += 128) {
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.fillRect(0, y, TILE_PX, 4);
+      for (let x = 24; x < TILE_PX; x += 64) {
+        ctx.beginPath();
+        ctx.arc(x, y + 20, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  },
+  gravel(ctx, rnd) {
+    grain(ctx, rnd, [128, 122, 112], 40, 2200);
   },
 };
 
