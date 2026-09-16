@@ -38,6 +38,24 @@ been felt on the headset; a desktop pass counts for nothing. Tune with
 | 21  | Abuse session: fling everything, jam props into corners, throw them off the world; nothing is lost, the backpack comes home           | [ ]  |                            |
 | 22  | Balls arc believably and bounce correctly on ground, ledges, overhangs, the angled face and the metal platforms, with distinct sounds | [ ]  |                            |
 
+## Phase 3: character
+
+| #   | Item                                                                                                                          | Pass | Notes / measured on device                  |
+| --- | ----------------------------------------------------------------------------------------------------------------------------- | ---- | ------------------------------------------- |
+| 23  | At 2 m and at speed (crowd gorillas), the read is unmistakably "gorilla" within a second                                      | [ ]  |                                             |
+| 24  | Weight sells: lean into motion, sag in the air, dip on landing, gait bob are visible in the body                              | [ ]  | `leanPerMps`, `sagAirborne`, `gaitBobM`: __ |
+| 25  | The player's own body never obstructs the view in normal play, including one-armed carrying; nothing within 0.2 m of the eyes | [ ]  | `torsoBelowHeadM`, `torsoBehindHeadM`: __   |
+| 26  | Arms read as attached: elbows bend down/out/back, forearms reach the hands (or point at them when out of reach)               | [ ]  | `upperArmM`, `forearmM`: __                 |
+| 27  | Frame floor with `?dev=perf,crowd` (five gorillas), 60 s idle and 60 s moving; record the CALLS line                          | [ ]  | calls both eyes: __                         |
+
+Draw-call convention: the HUD and the smoke log count what the renderer
+drew last frame. On device that is both eyes; the headless smoke is a
+single view and culls whatever is behind the camera, so its number is a
+sanity bound (`smoke:crowd` fails above 400), not the device number.
+
+Silhouette tuning lives in `GORILLA_PROPORTIONS` (`src/gorilla.ts`); pose
+knobs are in the table below.
+
 ## Knobs (`src/movementTuning.ts`)
 
 | Knob                  | Unit | Default | Turn it…                                                                     |

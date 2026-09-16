@@ -49,8 +49,10 @@ once in Quest Browser and bookmark it.
 
 ### Dev flags
 
-Append `?dev=1` (all dev flags) or `?dev=perf`, `?dev=tools` (individual)
-to the URL. Flags work in every build, including the GitHub Pages deploy,
+Append `?dev=1` (all dev flags) or `?dev=perf`, `?dev=tools`, `?dev=crowd`
+(individual) to the URL. `crowd` adds five scripted gorillas for the
+frame-cost check; `look=<palette>,<slotA>,<slotB>` (for example
+`?look=3,cap,scarf`) previews a body colour and accessories. Flags work in every build, including the GitHub Pages deploy,
 so the deployed artifact can be measured; they are off unless the URL asks.
 
 With `?dev=tools` on a desktop browser (no headset), the desktop drive is

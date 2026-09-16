@@ -5,7 +5,10 @@
 // under SwiftShader, so this runs in real time instead.
 import { spawn } from 'node:child_process';
 
-const [url, secs = '9'] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const maxCallsIndex = args.indexOf('--max-calls');
+const maxCalls = maxCallsIndex >= 0 ? Number(args.splice(maxCallsIndex, 2)[1]) : Infinity;
+const [url, secs = '9'] = args;
 if (!url) {
   console.error('usage: node scripts/smoke.mjs <url> [seconds]');
   process.exit(2);
@@ -47,6 +50,7 @@ let id = 0;
 const send = (method, params = {}) => ws.send(JSON.stringify({ id: ++id, method, params }));
 const positions = [];
 const propSamples = [];
+const callSamples = [];
 let failures = 0;
 ws.onmessage = (e) => {
   const m = JSON.parse(e.data);
@@ -57,6 +61,8 @@ ws.onmessage = (e) => {
     if (at) positions.push(at.slice(1, 4).map(Number));
     const rest = /props at rest: (\d+)\/(\d+)/.exec(text);
     if (rest) propSamples.push([Number(rest[1]), Number(rest[2])]);
+    const calls = /calls (\d+)/.exec(text);
+    if (calls) callSamples.push(Number(calls[1]));
     if (/NaN/.test(text)) failures++;
     if (m.params.type === 'error') failures++;
   } else if (m.method === 'Runtime.exceptionThrown') {
@@ -78,7 +84,14 @@ chrome.kill();
 const first = positions[0];
 const last = positions[positions.length - 1];
 const moved = first && last ? Math.hypot(last[0] - first[0], last[2] - first[2]) : 0;
+const lastProps = propSamples[propSamples.length - 1] ?? [0, 0];
+const propsOk = propSamples.length === 0 || lastProps[0] >= lastProps[1] - 1;
+const lastCalls = callSamples[callSamples.length - 1] ?? 0;
+const callsOk = lastCalls <= maxCalls;
 console.log(
-  `smoke: ${positions.length} position samples, moved ${moved.toFixed(2)} m, ${failures} failure(s)`,
+  `smoke: ${positions.length} position samples, moved ${moved.toFixed(2)} m, ` +
+    `props at rest ${lastProps[0]}/${lastProps[1]}, draw calls ${lastCalls}` +
+    (Number.isFinite(maxCalls) ? ` (max ${maxCalls})` : '') +
+    `, ${failures} failure(s)`,
 );
-if (failures > 0 || positions.length < 3 || moved < 1) process.exit(1);
+if (failures > 0 || positions.length < 3 || moved < 1 || !propsOk || !callsOk) process.exit(1);

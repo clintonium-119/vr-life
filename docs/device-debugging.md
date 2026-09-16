@@ -125,6 +125,7 @@ Done is measured on.
 npm run build
 npm run preview &          # production build on http://localhost:4173/vr-life/
 npm run smoke              # node scripts/smoke.mjs <url> 9
+npm run smoke:crowd        # same with ?dev=crowd and a --max-calls 400 budget
 ```
 
 `scripts/smoke.mjs` opens the URL in headless Chromium over the DevTools

@@ -5,16 +5,18 @@
 export interface DevFlags {
   /** Performance readout / harness UI. */
   perf: boolean;
-  /** Developer tools (teleport rig, normals, hand rays). */
+  /** Developer tools (teleport rig, hand rays, desktop drive). */
   tools: boolean;
+  /** A handful of scripted gorillas for the frame-cost check. */
+  crowd: boolean;
 }
 
-const KNOWN_FLAGS: ReadonlySet<keyof DevFlags> = new Set(['perf', 'tools']);
+const KNOWN_FLAGS: ReadonlySet<keyof DevFlags> = new Set(['perf', 'tools', 'crowd']);
 
 export function parseDevFlags(query: string): DevFlags {
   const params = new URLSearchParams(query);
   const raw = params.get('dev');
-  const flags: DevFlags = { perf: false, tools: false };
+  const flags: DevFlags = { perf: false, tools: false, crowd: false };
   if (!raw) return flags;
 
   if (raw === '1' || raw.toLowerCase() === 'all') {

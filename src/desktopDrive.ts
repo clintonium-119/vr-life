@@ -264,7 +264,7 @@ export function buildDesktopDrive(
         const p = rig.root.position;
         console.info(
           `[vr-life] rig at (${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}) ` +
-            `vel ${locomotion.velocity.length().toFixed(2)} m/s`,
+            `vel ${locomotion.velocity.length().toFixed(2)} m/s calls ${renderer.info.render.calls}`,
         );
         const ball = props.props.find((q) => q.spec.id === 'basketball');
         console.info(

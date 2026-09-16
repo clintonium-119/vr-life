@@ -15,6 +15,7 @@ import { buildGrab } from './grab';
 import { tuning } from './movementTuning';
 import { parseLook } from './appearance';
 import { buildGorillaRig } from './gorillaRig';
+import { buildGorillaCrowd, type GorillaCrowd } from './gorillaCrowd';
 
 const container = document.getElementById('app') as HTMLDivElement;
 const overlay = document.getElementById('entry-overlay') as HTMLDivElement;
@@ -68,6 +69,9 @@ const propEvents = {
 const playerPos = new THREE.Vector3();
 renderer.domElement.addEventListener('pointerdown', () => audio.resume(), { once: true });
 
+// Crowd (dev flag `crowd`): scripted gorillas for the frame-cost check.
+const crowd: GorillaCrowd | null = devFlags.crowd ? buildGorillaCrowd(scene) : null;
+
 // Dev tools (dev flag `tools`): teleport + hand rays. Never constructed
 // without the flag.
 const devTools: DevTools | null = devFlags.tools
@@ -109,6 +113,7 @@ renderer.setAnimationLoop((time: number) => {
   grab.update(dt);
   locomotion.update(dt);
   gorillaRig.update(dt);
+  if (crowd !== null) crowd.update(dt);
   propWorld.step(dt, world, tuning, propEvents, camera.getWorldPosition(playerPos));
   testProps.update(dt);
   audio.update();
