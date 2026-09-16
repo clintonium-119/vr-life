@@ -26,6 +26,9 @@ requests `immersive-vr` with the `local-floor` reference space (6DoF,
 floor-anchored). On a desktop without an XR device the entry overlay shows
 an unsupported-device fallback instead.
 
+On-device debugging (inner and outer loops, DevTools, logs, traces):
+see [docs/device-debugging.md](docs/device-debugging.md).
+
 ### Deploy and launch on the headset
 
 Every push to `main` runs `.github/workflows/deploy-pages.yml`: typecheck,
