@@ -109,6 +109,8 @@ export interface HouseSpec {
   siding: TileName;
   /** True: the door is a decal on a solid wall (neighbour shells). */
   doorDecal?: boolean;
+  /** Floor height the walls stand on (default 0). */
+  base?: number;
   name?: string;
 }
 
@@ -126,6 +128,7 @@ export function addHouseShell(
   const hw = spec.width / 2;
   const hd = spec.depth / 2;
   const H = spec.wallHeight;
+  const B = spec.base ?? 0;
   const name = spec.name ?? 'house';
   const frontZ = spec.doorSide === '-z' ? cz - hd : cz + hd;
   const backZ = spec.doorSide === '-z' ? cz + hd : cz - hd;
@@ -139,6 +142,7 @@ export function addHouseShell(
     length: spec.width,
     height: H,
     thickness: WALL_T,
+    base: B,
     tiles: spec.siding,
     opening: spec.doorDecal === true ? undefined : [doorAt, 1.4, 2.4],
   });
@@ -147,7 +151,7 @@ export function addHouseShell(
     chunk.add({
       name: `${name}:doorDecal`,
       size: [1.2, 2.2, 0.06],
-      position: [cx, 1.1, dz],
+      position: [cx, B + 1.1, dz],
       tiles: { sides: 'door' },
       uvScale: 2.2,
       surface: 'wood',
@@ -162,6 +166,7 @@ export function addHouseShell(
     length: spec.width,
     height: H,
     thickness: WALL_T,
+    base: B,
     tiles: spec.siding,
   });
   addWall(chunk, {
@@ -171,6 +176,7 @@ export function addHouseShell(
     length: spec.depth,
     height: H,
     thickness: WALL_T,
+    base: B,
     tiles: spec.siding,
   });
   addWall(chunk, {
@@ -180,6 +186,7 @@ export function addHouseShell(
     length: spec.depth,
     height: H,
     thickness: WALL_T,
+    base: B,
     tiles: spec.siding,
   });
 
@@ -209,7 +216,7 @@ export function addHouseShell(
   for (const s of [-1, 1]) {
     addSlab(chunk, {
       name: `${name}:roof${s < 0 ? 'N' : 'S'}`,
-      centre: [cx, H + 0.12 + rise / 2, cz + (s * run) / 2],
+      centre: [cx, B + H + 0.12 + rise / 2, cz + (s * run) / 2],
       size: [spec.width + 0.8, 0.16, slabLen],
       rotation: [-s * pitch, 0, 0],
       tiles: { sides: 'planks', top: 'shingles', bottom: 'planks' },
@@ -224,7 +231,7 @@ export function addHouseShell(
       const depth = spec.depth * frac;
       addSlab(chunk, {
         name: `${name}:gable`,
-        centre: [x, H + 0.12 + (rise / 3) * (step + 0.5), cz],
+        centre: [x, B + H + 0.12 + (rise / 3) * (step + 0.5), cz],
         size: [WALL_T, rise / 3, depth],
         tiles: spec.siding,
         surface: 'stone',
@@ -234,12 +241,12 @@ export function addHouseShell(
 
   // Windows: two on the front (either side of the door), one per side wall.
   const wz = frontZ + (spec.doorSide === '-z' ? -WALL_T / 2 - 0.04 : WALL_T / 2 + 0.04);
-  addWindow(chunk, [cx - hw / 2, 1.6, wz], 'x');
-  addWindow(chunk, [cx + hw / 2, 1.6, wz], 'x');
-  addWindow(chunk, [cx - hw - WALL_T / 2 - 0.04, 1.6, cz], 'z');
-  addWindow(chunk, [cx + hw + WALL_T / 2 + 0.04, 1.6, cz], 'z');
+  addWindow(chunk, [cx - hw / 2, B + 1.6, wz], 'x');
+  addWindow(chunk, [cx + hw / 2, B + 1.6, wz], 'x');
+  addWindow(chunk, [cx - hw - WALL_T / 2 - 0.04, B + 1.6, cz], 'z');
+  addWindow(chunk, [cx + hw + WALL_T / 2 + 0.04, B + 1.6, cz], 'z');
 
-  return { doorCentre: [cx, 1.2, frontZ] };
+  return { doorCentre: [cx, B + 1.2, frontZ] };
 }
 
 /** Picket fence: posts every 1.5 m and two rails. */
@@ -452,7 +459,7 @@ export function addSteps(
   tread = 0.32,
 ): void {
   for (let i = 0; i < count; i++) {
-    const top = start[1] - rise * i;
+    const top = start[1] - rise * (i + 1); // first tread one riser below the porch
     const [x, z] = along(axis, [start[0], start[2]], dir * (tread * (i + 0.5)));
     chunk.add({
       name: 'step',

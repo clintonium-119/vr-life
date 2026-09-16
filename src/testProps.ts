@@ -121,11 +121,17 @@ export interface TestProps {
 const _spinAxis = new THREE.Vector3();
 const _spinQuat = new THREE.Quaternion();
 
-export function buildTestProps(scene: THREE.Scene, props: PropWorld): TestProps {
+export function buildTestProps(
+  scene: THREE.Scene,
+  props: PropWorld,
+  homes: Record<string, [number, number, number]> = {},
+): TestProps {
   const group = new THREE.Group();
   group.name = 'testProps';
   scene.add(group);
   const entries = placements().map(({ spec, mesh, home }) => {
+    const override = homes[spec.id];
+    if (override !== undefined) home.set(override[0], override[1] + spec.radius, override[2]);
     const prop = new Prop(spec, home);
     props.add(prop);
     group.add(mesh);

@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import { devFlags } from './config';
-import { buildTestSpace } from './testSpace';
+import { buildWorld, parseWorld } from './world';
 import { buildPlayer } from './placeholderPlayer';
 import { PerfSampler } from './perfStats';
 import { buildPerfHud, type PerfHud } from './perfHud';
 import { buildDevTools, type DevTools } from './devTools';
-import { CollisionWorld, collidersFromGroup } from './collision';
+import { CollisionWorld } from './collision';
 import { buildLocomotion } from './locomotion';
 import { buildMovementAudio } from './movementAudio';
 import { buildDesktopDrive, type DesktopDrive } from './desktopDrive';
@@ -34,27 +34,34 @@ scene.background = new THREE.Color(0x101418);
 // One camera for both desktop and XR. In XR the headset pose drives this
 // camera, so it is positioned only for the pre-session desktop view.
 const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.05, 100);
-camera.position.set(0, 1.6, 2);
+camera.position.set(0, 1.6, 0);
 
-// Debug climbing volume (ground, walls, ledges, overhangs, launch gap);
-// lighting lives inside the group.
-const testSpace = buildTestSpace(scene);
-scene.add(testSpace);
+// The world: the player's house and street block by default, or the debug
+// climbing volume with ?world=test. Colliders come from the world; the rig
+// spawns with its feet at the world's spawn point.
+const worldKind = parseWorld(location.search);
+const worldBuilt = buildWorld(worldKind, scene);
 
 // Placeholder player rig: one root owning the camera, both grips, and the
 // body. Hands are parented to the XR grip-space objects, which the
 // WebXRManager updates from the input-source pose every frame — that is the
 // whole "driving": 1:1 passthrough, no per-frame pose code here.
 const player = buildPlayer(scene, renderer, camera, parseLook(location.search));
+player.root.position.set(
+  worldBuilt.spawn.x,
+  worldBuilt.spawn.y - tuning.eyeHeightOffset,
+  worldBuilt.spawn.z,
+);
+camera.rotation.y = worldBuilt.spawnYaw;
 
 // Movement: the collision world is every surface-tagged mesh; locomotion
 // moves the rig root from hand pushes, gravity and contact.
 const world = new CollisionWorld();
-world.add(...collidersFromGroup(testSpace));
+world.add(...worldBuilt.colliders);
 // Props: rigid spheres in the same collision world; the grab system holds,
 // stows and throws them, and a holding hand cannot push.
 const propWorld = new PropWorld();
-const testProps = buildTestProps(scene, propWorld);
+const testProps = buildTestProps(scene, propWorld, worldBuilt.propHomes);
 const grab = buildGrab(player, propWorld, tuning, renderer.xr);
 const locomotion = buildLocomotion(player, world, tuning, (hand) => grab.handHolding(hand));
 const audio = buildMovementAudio(locomotion);
@@ -75,13 +82,13 @@ const crowd: GorillaCrowd | null = devFlags.crowd ? buildGorillaCrowd(scene) : n
 // Dev tools (dev flag `tools`): teleport + hand rays. Never constructed
 // without the flag.
 const devTools: DevTools | null = devFlags.tools
-  ? buildDevTools(renderer, camera, player, testSpace, () => locomotion.teleportReset())
+  ? buildDevTools(renderer, camera, player, worldBuilt.group, () => locomotion.teleportReset())
   : null;
 // Desktop drive (dev flag `tools`, desktop only): emulated hand strides so
 // the movement model can be exercised in a browser without a headset.
 const desktopDrive: DesktopDrive | null =
   devFlags.tools && !renderer.xr.isPresenting
-    ? buildDesktopDrive(renderer, camera, player, locomotion, grab, propWorld)
+    ? buildDesktopDrive(renderer, camera, player, locomotion, grab, propWorld, worldBuilt.doorZ)
     : null;
 
 // Perf harness (dev flag `perf`): the sampler samples before the frame's

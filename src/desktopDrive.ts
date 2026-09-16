@@ -63,7 +63,10 @@ export function buildDesktopDrive(
   locomotion: Locomotion,
   grab: Grab,
   props: PropWorld,
+  /** A z plane whose first crossing is logged (the front door), if any. */
+  doorZ: number | null = null,
 ): DesktopDrive {
+  let doorCrossed = false;
   let active = !renderer.xr.isPresenting;
   renderer.xr.addEventListener('sessionstart', () => {
     active = false;
@@ -257,6 +260,10 @@ export function buildDesktopDrive(
           right.phase = 'rest';
           console.info('[vr-life] auto throw');
         }
+      }
+      if (!doorCrossed && doorZ !== null && rig.root.position.z < doorZ) {
+        doorCrossed = true;
+        console.info('[vr-life] door crossed');
       }
       logClock += dt;
       if (logClock >= LOG_PERIOD_S) {

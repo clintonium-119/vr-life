@@ -8,6 +8,8 @@ import { spawn } from 'node:child_process';
 const args = process.argv.slice(2);
 const maxCallsIndex = args.indexOf('--max-calls');
 const maxCalls = maxCallsIndex >= 0 ? Number(args.splice(maxCallsIndex, 2)[1]) : Infinity;
+const requireIndex = args.indexOf('--require');
+const required = requireIndex >= 0 ? args.splice(requireIndex, 2)[1] : null;
 const [url, secs = '9'] = args;
 if (!url) {
   console.error('usage: node scripts/smoke.mjs <url> [seconds]');
@@ -52,6 +54,7 @@ const positions = [];
 const propSamples = [];
 const callSamples = [];
 let failures = 0;
+let sawRequired = false;
 ws.onmessage = (e) => {
   const m = JSON.parse(e.data);
   if (m.method === 'Runtime.consoleAPICalled') {
@@ -63,6 +66,7 @@ ws.onmessage = (e) => {
     if (rest) propSamples.push([Number(rest[1]), Number(rest[2])]);
     const calls = /calls (\d+)/.exec(text);
     if (calls) callSamples.push(Number(calls[1]));
+    if (required !== null && text.includes(required)) sawRequired = true;
     if (/NaN/.test(text)) failures++;
     if (m.params.type === 'error') failures++;
   } else if (m.method === 'Runtime.exceptionThrown') {
@@ -92,6 +96,9 @@ console.log(
   `smoke: ${positions.length} position samples, moved ${moved.toFixed(2)} m, ` +
     `props at rest ${lastProps[0]}/${lastProps[1]}, draw calls ${lastCalls}` +
     (Number.isFinite(maxCalls) ? ` (max ${maxCalls})` : '') +
-    `, ${failures} failure(s)`,
+    `, ${failures} failure(s)` +
+    (required !== null ? `, required "${required}": ${sawRequired ? 'seen' : 'MISSING'}` : ''),
 );
-if (failures > 0 || positions.length < 3 || moved < 1 || !propsOk || !callsOk) process.exit(1);
+const requiredOk = required === null || sawRequired;
+if (failures > 0 || positions.length < 3 || moved < 1 || !propsOk || !callsOk || !requiredOk)
+  process.exit(1);

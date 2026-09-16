@@ -12,8 +12,9 @@
     "launch": "adb shell am start -a android.intent.action.VIEW -d https://clintonium-119.github.io/vr-life/",
     "test": "vitest run",
     "test:watch": "vitest",
-    "smoke": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto' 9",
-    "smoke:crowd": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools,crowd&drive=auto' 9 --max-calls 400"
+    "smoke": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?world=test&dev=perf,tools&drive=auto' 9",
+    "smoke:crowd": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?world=test&dev=perf,tools,crowd&drive=auto' 9 --max-calls 400",
+    "smoke:home": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto' 10 --require 'door crossed'"
   },
   "dependencies": {
     "three": "^0.186.0"
