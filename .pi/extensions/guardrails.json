@@ -49,6 +49,10 @@
       {
         "kind": "directory",
         "path": ""
+      },
+      {
+        "kind": "file",
+        "path": "~"
       }
     ]
   },
