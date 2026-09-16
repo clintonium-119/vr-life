@@ -46,6 +46,7 @@ const ws = new WebSocket(targets[0].webSocketDebuggerUrl);
 let id = 0;
 const send = (method, params = {}) => ws.send(JSON.stringify({ id: ++id, method, params }));
 const positions = [];
+const propSamples = [];
 let failures = 0;
 ws.onmessage = (e) => {
   const m = JSON.parse(e.data);
@@ -54,6 +55,9 @@ ws.onmessage = (e) => {
     console.log(m.params.type.toUpperCase(), text);
     const at = /rig at \(([-\d.]+), ([-\d.]+), ([-\d.]+)\)/.exec(text);
     if (at) positions.push(at.slice(1, 4).map(Number));
+    const rest = /props at rest: (\d+)\/(\d+)/.exec(text);
+    if (rest) propSamples.push([Number(rest[1]), Number(rest[2])]);
+    if (/NaN/.test(text)) failures++;
     if (m.params.type === 'error') failures++;
   } else if (m.method === 'Runtime.exceptionThrown') {
     console.log(

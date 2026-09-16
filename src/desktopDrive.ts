@@ -1,13 +1,17 @@
 import * as THREE from 'three';
+import type { Grab } from './grab';
 import type { Locomotion } from './locomotion';
 import type { PlayerRig } from './placeholderPlayer';
+import type { PropWorld } from './props';
 
 // Dev-only desktop drive (dev flag `tools`, no XR session): pointer-lock mouse
 // look stands in for turning your body, and keys swing the real hand groups
 // through a scripted stride so the stroke goes through the real anchors and
-// body. J/K = left/right stride, Space = both (leap), W/S = stride length.
-// `?drive=auto` runs alternating strides for a few seconds after load (the
-// host smoke test). Inert once an XR session starts. One deletable module.
+// body. J/K = left/right stride, Space = both (leap), W/S = stride length,
+// F/G = hold the left/right grip (release throws), a held grab key reaches
+// the hand forward. `?drive=auto` runs alternating strides and then grabs
+// and throws the basketball (the host smoke test). Inert once an XR session
+// starts. One deletable module.
 
 // Right hand at rest, camera-yaw space: hanging at hip height (the eye sits
 // ~1.6 m above the physical floor on the desktop camera).
@@ -22,9 +26,12 @@ const PHASE_LIFT_S = 0.08;
 const LOOK_SENSITIVITY = 0.002;
 const AUTO_STRIDE_PERIOD_S = 0.5;
 const AUTO_DURATION_S = 5;
+const AUTO_GRAB_AT_S = 6;
+const AUTO_THROW_AT_S = 6.6;
+const REACH_GRAB_M = 0.45;
 const LOG_PERIOD_S = 1;
 
-type Phase = 'rest' | 'reach' | 'drag' | 'lift';
+type Phase = 'rest' | 'reach' | 'drag' | 'lift' | 'grabReach' | 'grabTo' | 'throw';
 
 interface Hand {
   group: THREE.Object3D;
@@ -33,6 +40,8 @@ interface Hand {
   elapsed: number;
   dragDir: THREE.Vector3;
   strideLength: number;
+  /** World-space target for the auto grab. */
+  grabTarget: THREE.Vector3 | null;
 }
 
 export interface DesktopDrive {
@@ -52,6 +61,8 @@ export function buildDesktopDrive(
   camera: THREE.PerspectiveCamera,
   rig: PlayerRig,
   locomotion: Locomotion,
+  grab: Grab,
+  props: PropWorld,
 ): DesktopDrive {
   let active = !renderer.xr.isPresenting;
   renderer.xr.addEventListener('sessionstart', () => {
@@ -69,6 +80,7 @@ export function buildDesktopDrive(
       elapsed: 0,
       dragDir: new THREE.Vector3(),
       strideLength: 0.6,
+      grabTarget: null,
     },
     {
       group: rig.handRight,
@@ -77,6 +89,7 @@ export function buildDesktopDrive(
       elapsed: 0,
       dragDir: new THREE.Vector3(),
       strideLength: 0.6,
+      grabTarget: null,
     },
   ];
 
@@ -106,6 +119,11 @@ export function buildDesktopDrive(
     else if (e.code === 'Space') {
       stride(hands[0]);
       stride(hands[1]);
+    } else if (e.code === 'KeyF' || e.code === 'KeyG') {
+      const hand = hands[e.code === 'KeyF' ? 0 : 1];
+      hand.phase = 'grabReach';
+      hand.elapsed = 0;
+      grab.pressGrip(hand.side < 0 ? 0 : 1);
     } else if (e.code === 'KeyW' || e.code === 'KeyS') {
       const d = e.code === 'KeyW' ? 0.1 : -0.1;
       for (const h of hands) h.strideLength = Math.min(1.2, Math.max(0.2, h.strideLength + d));
@@ -113,7 +131,18 @@ export function buildDesktopDrive(
     }
   });
 
+  document.addEventListener('keyup', (e) => {
+    if (!active) return;
+    if (e.code === 'KeyF' || e.code === 'KeyG') {
+      const hand = hands[e.code === 'KeyF' ? 0 : 1];
+      grab.releaseGrip(hand.side < 0 ? 0 : 1);
+      hand.phase = 'rest';
+    }
+  });
+
   const auto = new URLSearchParams(globalThis.location?.search ?? '').get('drive') === 'auto';
+  let autoGrabbed = false;
+  let autoThrown = false;
   let autoClock = 0;
   let autoNext = 0.5;
   let autoIndex = 0;
@@ -177,6 +206,23 @@ export function buildDesktopDrive(
           pos.copy(_rest);
         }
         return;
+      case 'grabReach':
+        // Key held: hand out in front at rest height, ready to grab.
+        _step.copy(_forward).multiplyScalar(REACH_GRAB_M).add(_rest);
+        pos.lerp(_step, Math.min(1, dt * 12));
+        return;
+      case 'grabTo':
+        // Auto script: reach to a world-space target (rig space = world minus root).
+        if (hand.grabTarget !== null) {
+          _step.copy(hand.grabTarget).sub(rig.root.position);
+          pos.lerp(_step, Math.min(1, dt * 10));
+        }
+        return;
+      case 'throw':
+        // Swing forward and up fast; the release happens on the timer.
+        pos.addScaledVector(_forward, 4 * dt);
+        pos.y += 2 * dt;
+        return;
     }
   }
 
@@ -185,11 +231,31 @@ export function buildDesktopDrive(
       if (!active) return;
       for (const h of hands) advance(h, dt);
 
-      if (auto && autoClock < AUTO_DURATION_S) {
+      if (auto) {
         autoClock += dt;
-        if (autoClock >= autoNext) {
+        if (autoClock < AUTO_DURATION_S && autoClock >= autoNext) {
           autoNext += AUTO_STRIDE_PERIOD_S;
           stride(hands[autoIndex++ % 2]);
+        }
+        const right = hands[1];
+        if (!autoGrabbed && autoClock >= AUTO_GRAB_AT_S - 0.4 && right.phase === 'rest') {
+          const target = props.props.find((p) => p.spec.id === 'basketball');
+          if (target !== undefined) {
+            right.grabTarget = target.position.clone();
+            right.phase = 'grabTo';
+          }
+        }
+        if (!autoGrabbed && autoClock >= AUTO_GRAB_AT_S) {
+          grab.pressGrip(1);
+          autoGrabbed = true;
+          console.info(`[vr-life] auto grab: ${grab.handHolding(1) ? 'holding' : 'missed'}`);
+          right.phase = 'throw';
+        }
+        if (autoGrabbed && !autoThrown && autoClock >= AUTO_THROW_AT_S) {
+          grab.releaseGrip(1);
+          autoThrown = true;
+          right.phase = 'rest';
+          console.info('[vr-life] auto throw');
         }
       }
       logClock += dt;
@@ -199,6 +265,13 @@ export function buildDesktopDrive(
         console.info(
           `[vr-life] rig at (${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}) ` +
             `vel ${locomotion.velocity.length().toFixed(2)} m/s`,
+        );
+        const ball = props.props.find((q) => q.spec.id === 'basketball');
+        console.info(
+          `[vr-life] props at rest: ${props.restingCount}/${props.props.length}` +
+            (ball
+              ? ` basketball ${ball.state} at (${ball.position.x.toFixed(2)}, ${ball.position.y.toFixed(2)}, ${ball.position.z.toFixed(2)})`
+              : ''),
         );
       }
     },

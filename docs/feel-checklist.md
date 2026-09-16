@@ -26,6 +26,18 @@ been felt on the headset; a desktop pass counts for nothing. Tune with
 | 14  | Frame floor sustained at top speed for ≥60 s (harness shows no warning)                          | [ ]  | session rate: __ Hz                          |
 | 15  | Eye height reads as a gorilla: relaxed downward swing slaps the ground; ledges within reach      | [ ]  | `eyeHeightOffset`: __                        |
 
+## Phase 2: grab and objects
+
+| #   | Item                                                                                                                                  | Pass | Notes / measured on device |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------- | ---- | -------------------------- |
+| 16  | Grab is positional: reach, touch, squeeze; `grabRadius` feels generous but never grabs through walls                                  | [ ]  | `grabRadius`: __           |
+| 17  | Running one-armed with the barrel or backpack is noticeably slower, unbalanced, and fun; the backpack feels lugged                    | [ ]  |                            |
+| 18  | The body lean toward the loaded side is visible and never moves the camera or hands                                                   | [ ]  | `carryLeanDeg`: __         |
+| 19  | Stowing a small item behind the back frees both hands completely; reaching back returns it                                            | [ ]  | `stowRadius`: __           |
+| 20  | Throws leave the hand at the speed of the swing; catching feels crisp                                                                 | [ ]  | `throwVelocityScale`: __   |
+| 21  | Abuse session: fling everything, jam props into corners, throw them off the world; nothing is lost, the backpack comes home           | [ ]  |                            |
+| 22  | Balls arc believably and bounce correctly on ground, ledges, overhangs, the angled face and the metal platforms, with distinct sounds | [ ]  |                            |
+
 ## Knobs (`src/movementTuning.ts`)
 
 | Knob                  | Unit | Default | Turn it…                                                                     |
@@ -62,7 +74,7 @@ npm run build && npm run preview &   # serves the production build on :4173
 npm run smoke                        # headless Chromium, 9 s of auto strides
 ```
 
-Passes when the rig moved more than 1 m with no exceptions. This proves the
+Passes when the rig moved more than 1 m, the props settled (all but the thrown ball at rest), and nothing threw. This proves the
 code path runs; it says nothing about feel.
 
 ## Final tuned URL

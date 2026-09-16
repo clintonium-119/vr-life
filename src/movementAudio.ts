@@ -31,6 +31,10 @@ const WIND_MAX_GAIN = 0.5;
 export interface MovementAudio {
   /** Create/resume the context. Call from a user gesture handler. */
   resume(): void;
+  /** A prop hit something at `speed` m/s; coloured by its surface. */
+  bounce(speed: number, surface: SurfaceTag): void;
+  /** A hand closed on a prop. */
+  catch(): void;
   /** Per frame: follows body speed for the wind. */
   update(): void;
   dispose(): void;
@@ -111,14 +115,21 @@ export function buildMovementAudio(
     };
   }
 
-  locomotion.events.slap = (speed, surface) => {
+  function surfaceBurst(speed: number, surface: SurfaceTag, gainScale: number): void {
     const p = SLAP_PALETTE[surface];
-    burst(p.freq, p.q, p.decay, p.gain * Math.min(1, speed / 3), 'bandpass');
-  };
+    burst(p.freq, p.q, p.decay, p.gain * gainScale * Math.min(1, speed / 3), 'bandpass');
+  }
+  locomotion.events.slap = (speed, surface) => surfaceBurst(speed, surface, 1);
   locomotion.events.bump = (speed) => thud(speed, 0.6);
   locomotion.events.landed = (speed) => thud(speed, 1);
 
   return {
+    bounce(speed, surface): void {
+      surfaceBurst(speed, surface, 0.7);
+    },
+    catch(): void {
+      burst(500, 1.5, 0.06, 0.35, 'bandpass');
+    },
     resume(): void {
       if (ctx === null) {
         ctx = new AudioContext();

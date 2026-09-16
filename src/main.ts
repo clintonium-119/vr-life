@@ -9,6 +9,10 @@ import { CollisionWorld, collidersFromGroup } from './collision';
 import { buildLocomotion } from './locomotion';
 import { buildMovementAudio } from './movementAudio';
 import { buildDesktopDrive, type DesktopDrive } from './desktopDrive';
+import { PropWorld } from './props';
+import { buildTestProps } from './testProps';
+import { buildGrab } from './grab';
+import { tuning } from './movementTuning';
 
 const container = document.getElementById('app') as HTMLDivElement;
 const overlay = document.getElementById('entry-overlay') as HTMLDivElement;
@@ -44,8 +48,19 @@ const player = buildPlayer(scene, renderer, camera);
 // moves the rig root from hand pushes, gravity and contact.
 const world = new CollisionWorld();
 world.add(...collidersFromGroup(testSpace));
-const locomotion = buildLocomotion(player, world);
+// Props: rigid spheres in the same collision world; the grab system holds,
+// stows and throws them, and a holding hand cannot push.
+const propWorld = new PropWorld();
+const testProps = buildTestProps(scene, propWorld);
+const grab = buildGrab(player, propWorld, tuning, renderer.xr);
+const locomotion = buildLocomotion(player, world, tuning, (hand) => grab.handHolding(hand));
 const audio = buildMovementAudio(locomotion);
+grab.events.grab = () => audio.catch();
+const propEvents = {
+  bounce: (_prop: unknown, speed: number, surface: Parameters<typeof audio.bounce>[1]) =>
+    audio.bounce(speed, surface),
+};
+const playerPos = new THREE.Vector3();
 renderer.domElement.addEventListener('pointerdown', () => audio.resume(), { once: true });
 
 // Dev tools (dev flag `tools`): teleport + hand rays. Never constructed
@@ -57,7 +72,7 @@ const devTools: DevTools | null = devFlags.tools
 // the movement model can be exercised in a browser without a headset.
 const desktopDrive: DesktopDrive | null =
   devFlags.tools && !renderer.xr.isPresenting
-    ? buildDesktopDrive(renderer, camera, player, locomotion)
+    ? buildDesktopDrive(renderer, camera, player, locomotion, grab, propWorld)
     : null;
 
 // Perf harness (dev flag `perf`): the sampler samples before the frame's
@@ -86,7 +101,10 @@ renderer.setAnimationLoop((time: number) => {
   if (perfSampler !== null) perfSampler.sample(time);
   if (devTools !== null) devTools.update();
   if (desktopDrive !== null) desktopDrive.update(dt);
+  grab.update(dt);
   locomotion.update(dt);
+  propWorld.step(dt, world, tuning, propEvents, camera.getWorldPosition(playerPos));
+  testProps.update(dt);
   audio.update();
   renderer.render(scene, camera);
   if (perfHud !== null) perfHud.update(time, renderer);

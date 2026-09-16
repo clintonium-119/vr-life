@@ -56,10 +56,12 @@ so the deployed artifact can be measured; they are off unless the URL asks.
 With `?dev=tools` on a desktop browser (no headset), the desktop drive is
 active: click the canvas to lock the pointer and look around with the
 mouse, `J`/`K` swing the left/right hand through a stride, `Space` swings
-both (a leap), `W`/`S` lengthen/shorten the stride. The strokes go through
+both (a leap), `W`/`S` lengthen/shorten the stride, `F`/`G` hold the
+left/right grip (the hand reaches forward; releasing the key throws). The
+dev teleport is on the trigger. The strokes go through
 the real hand anchors and body, so this exercises the movement model
 without a headset. `&drive=auto` runs alternating strides for five seconds
-after load (used by the host smoke test).
+after load, then grabs and throws the basketball (used by the host smoke test).
 
 Movement feel knobs can be overridden at runtime with `?tune=k=v,k2=v2`
 (for example `?tune=handStiffness=40,speedCap=16`); the knob list, units
