@@ -65,6 +65,8 @@ export function buildDesktopDrive(
   props: PropWorld,
   /** A z plane whose first crossing is logged (the front door), if any. */
   doorZ: number | null = null,
+  /** Extra text appended to the per-second log (chunk counts). */
+  extraLog: (() => string) | null = null,
 ): DesktopDrive {
   let doorCrossed = false;
   let active = !renderer.xr.isPresenting;
@@ -271,7 +273,8 @@ export function buildDesktopDrive(
         const p = rig.root.position;
         console.info(
           `[vr-life] rig at (${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}) ` +
-            `vel ${locomotion.velocity.length().toFixed(2)} m/s calls ${renderer.info.render.calls}`,
+            `vel ${locomotion.velocity.length().toFixed(2)} m/s calls ${renderer.info.render.calls}` +
+            (extraLog !== null ? ` ${extraLog()}` : ''),
         );
         const ball = props.props.find((q) => q.spec.id === 'basketball');
         console.info(

@@ -40,7 +40,7 @@ camera.position.set(0, 1.6, 0);
 // climbing volume with ?world=test. Colliders come from the world; the rig
 // spawns with its feet at the world's spawn point.
 const worldKind = parseWorld(location.search);
-const worldBuilt = buildWorld(worldKind, scene);
+const worldBuilt = buildWorld(worldKind, scene, location.search);
 
 // Placeholder player rig: one root owning the camera, both grips, and the
 // body. Hands are parented to the XR grip-space objects, which the
@@ -88,7 +88,16 @@ const devTools: DevTools | null = devFlags.tools
 // the movement model can be exercised in a browser without a headset.
 const desktopDrive: DesktopDrive | null =
   devFlags.tools && !renderer.xr.isPresenting
-    ? buildDesktopDrive(renderer, camera, player, locomotion, grab, propWorld, worldBuilt.doorZ)
+    ? buildDesktopDrive(
+        renderer,
+        camera,
+        player,
+        locomotion,
+        grab,
+        propWorld,
+        worldBuilt.doorZ,
+        () => `chunks ${worldBuilt.chunks.visibleCount}/${worldBuilt.chunks.total}`,
+      )
     : null;
 
 // Perf harness (dev flag `perf`): the sampler samples before the frame's
@@ -106,6 +115,7 @@ function startPerfHarness(sessionRateHz: number | undefined): void {
     `VEL ${locomotion.velocity.length().toFixed(1)} m/s ${
       locomotion.anchored ? 'HOLD' : locomotion.grounded ? 'GROUND' : 'AIR'
     }`,
+    `CHUNKS ${worldBuilt.chunks.visibleCount}/${worldBuilt.chunks.total}`,
   ]);
 }
 if (devFlags.perf) startPerfHarness(undefined);
@@ -120,6 +130,7 @@ renderer.setAnimationLoop((time: number) => {
   grab.update(dt);
   locomotion.update(dt);
   gorillaRig.update(dt);
+  worldBuilt.chunks.update(camera.getWorldPosition(playerPos));
   if (crowd !== null) crowd.update(dt);
   propWorld.step(dt, world, tuning, propEvents, camera.getWorldPosition(playerPos));
   testProps.update(dt);
