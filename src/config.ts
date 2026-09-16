@@ -29,4 +29,7 @@ export function parseDevFlags(query: string): DevFlags {
   return flags;
 }
 
-export const devFlags: Readonly<DevFlags> = Object.freeze(parseDevFlags(window.location.search));
+// `location` is absent under the Node test runner; no query means all off.
+export const devFlags: Readonly<DevFlags> = Object.freeze(
+  parseDevFlags(globalThis.location?.search ?? ''),
+);

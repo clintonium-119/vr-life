@@ -16,6 +16,7 @@ Other scripts:
 
 - `npm run typecheck` — TypeScript strict check
 - `npm run lint` — ESLint (typescript-eslint recommended)
+- `npm test` — Vitest unit tests for the pure logic (`*.test.ts` next to the source)
 - `npm run launch` — open the deployed site in Quest Browser over ADB
 
 ### Running on the headset
