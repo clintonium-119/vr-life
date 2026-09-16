@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { PALETTE, type Appearance } from './appearance';
+import { PALETTE, buildAccessory, type Appearance } from './appearance';
 
 // The gorilla, built from parametric primitives: barrel chest, heavy sloped
 // shoulders, long thick forearms, small hips, short legs, brow ridge and
@@ -228,7 +228,7 @@ export function buildGorilla(appearance: Appearance, options: GorillaOptions = {
     void i;
   }
 
-  return {
+  const parts: GorillaParts = {
     root,
     torso,
     chest,
@@ -246,11 +246,24 @@ export function buildGorilla(appearance: Appearance, options: GorillaOptions = {
     furMaterial,
     skinMaterial,
   };
+  setAppearance(parts, appearance);
+  return parts;
 }
 
-/** Recolour the fur to the palette entry (accessories: appearance step). */
+/** Recolour the fur and rebuild the two accessory slots. */
 export function setAppearance(parts: GorillaParts, appearance: Appearance): void {
   parts.furMaterial.color.set(PALETTE[appearance.bodyColor] ?? PALETTE[0]);
+  for (const anchor of [parts.headAnchor, parts.neckAnchor]) {
+    for (const child of [...anchor.children]) {
+      if (child.userData.accessory === true) anchor.remove(child);
+    }
+  }
+  for (const kind of appearance.accessories) {
+    const built = buildAccessory(kind);
+    if (built === null) continue;
+    built.object.userData.accessory = true;
+    (built.attachesTo === 'head' ? parts.headAnchor : parts.neckAnchor).add(built.object);
+  }
 }
 
 /** Every mesh in the gorilla, including the detached hands. */

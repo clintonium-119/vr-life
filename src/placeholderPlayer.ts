@@ -1,80 +1,32 @@
 import * as THREE from 'three';
+import { DEFAULT_APPEARANCE, type Appearance } from './appearance';
+import { buildGorilla, type GorillaParts } from './gorilla';
 import { tuning } from './movementTuning';
 
-// Placeholder player: a knuckle-walker body stub plus always-visible hands
-// and forearms that follow the XR controllers 1:1. Pose is pure passthrough
-// — hand/forearm transforms come straight from the input-source grip pose
-// each frame; no smoothing, no lerp, no offsets. No animation, no IK, no
-// physics here (Phase 1 / Phase 3 own those).
+// The player rig: one root that owns the XR camera, both controller grips,
+// and the gorilla body (first person: no head). The gorilla's hands are
+// parented to the grip-space objects, which the WebXRManager updates from
+// the input-source pose every frame: 1:1 passthrough, no smoothing. The
+// body answers the hands through gorillaRig.ts (IK, lean, sag, gait).
 
 export interface PlayerRig {
-  /** The one movable root: owns the camera, both grips, and the body. Move
-   * this to move the whole player (teleport, later locomotion). */
+  /** The one movable root: owns the camera, both grips, and the body. */
   root: THREE.Group;
   /** The XR camera (head), child of root. */
   head: THREE.Camera;
-  /** Body stub, child of root. */
+  /** Carry wrapper at the torso position; grab.ts rolls it when lugging. */
   group: THREE.Group;
+  gorilla: GorillaParts;
+  appearance: Appearance;
   handLeft: THREE.Group;
   handRight: THREE.Group;
-}
-
-const SKIN_COLOR = 0x2b2620;
-const MATT_COLOR = 0x3a332a;
-
-// One shared material per part category — draw-call discipline.
-const skinMaterial = new THREE.MeshLambertMaterial({ color: SKIN_COLOR });
-const matMaterial = new THREE.MeshLambertMaterial({ color: MATT_COLOR });
-
-function buildHand(name: string): THREE.Group {
-  const hand = new THREE.Group();
-  hand.name = name;
-
-  // Mitt: a flattened sphere reads as a fist from every angle. No finger
-  // fidelity — the real hands arrive in Phase 3.
-  const mitt = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 10), skinMaterial);
-  mitt.name = `${name}Mitt`;
-  mitt.scale.set(1.15, 0.8, 1.35);
-  hand.add(mitt);
-
-  // Forearm: capsule from the wrist back toward the body along local +Z
-  // (the grip pose points its -Z down the aim direction), so the hand
-  // reads as attached to an arm rather than floating.
-  const forearm = new THREE.Mesh(new THREE.CapsuleGeometry(0.042, 0.28, 4, 8), matMaterial);
-  forearm.name = `${name}Forearm`;
-  forearm.rotation.x = Math.PI / 2; // capsule axis (Y) -> Z
-  forearm.position.z = 0.24;
-  hand.add(forearm);
-
-  return hand;
-}
-
-function buildBody(): THREE.Group {
-  const body = new THREE.Group();
-  body.name = 'playerBody';
-
-  // Broad chest, low and forward of the camera (head sits at ~1.6 m), so the
-  // stub reads as the player's own hunched torso and never covers the
-  // forward view.
-  const chest = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.48, 0.5), skinMaterial);
-  chest.name = 'chest';
-  chest.position.set(0, 0.95, -0.3);
-  body.add(chest);
-
-  // Small head stub, hunched forward — well below camera height.
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 10), skinMaterial);
-  head.name = 'headStub';
-  head.scale.set(1.1, 0.9, 1.15);
-  head.position.set(0, 1.22, -0.42);
-  body.add(head);
-
-  return body;
 }
 
 export function buildPlayer(
   scene: THREE.Scene,
   renderer: THREE.WebGLRenderer,
   camera: THREE.Camera,
+  appearance: Appearance = DEFAULT_APPEARANCE,
 ): PlayerRig {
   // Rig root ("dolly"): the XR manager composes the headset/controller poses
   // under the camera's parent, so one transform here moves everything.
@@ -84,15 +36,15 @@ export function buildPlayer(
   root.add(camera);
   scene.add(root);
 
-  const group = buildBody();
+  const gorilla = buildGorilla(appearance, { firstPerson: true });
+  const group = new THREE.Group();
+  group.name = 'playerBody';
+  group.add(gorilla.root);
   root.add(group);
 
-  const handLeft = buildHand('handLeft');
-  const handRight = buildHand('handRight');
+  const [handLeft, handRight] = gorilla.hand;
 
-  // Attach each hand group to its controller's grip space object: the
-  // WebXRManager updates those Object3Ds directly from the input-source
-  // pose every frame, which is exactly the 1:1 passthrough this step owns.
+  // Attach each hand group to its controller's grip space object.
   const grips: THREE.Object3D[] = [
     renderer.xr.getControllerGrip(0),
     renderer.xr.getControllerGrip(1),
@@ -120,5 +72,5 @@ export function buildPlayer(
     root.add(grip);
   }
 
-  return { root, head: camera, group, handLeft, handRight };
+  return { root, head: camera, group, gorilla, appearance, handLeft, handRight };
 }

@@ -6,6 +6,8 @@ import { buildLocomotion } from './locomotion';
 import { tuning } from './movementTuning';
 import type { PlayerRig } from './placeholderPlayer';
 import { Prop, PropWorld, type PropSpec } from './props';
+import { DEFAULT_APPEARANCE } from './appearance';
+import { buildGorilla } from './gorilla';
 
 const DT = 1 / 72;
 const small: PropSpec = {
@@ -23,10 +25,10 @@ function fakeRig(): PlayerRig {
   const head = new PerspectiveCamera();
   head.position.set(0, 1.6, 0);
   const group = new Group();
-  const handLeft = new Group();
-  const handRight = new Group();
+  const gorilla = buildGorilla(DEFAULT_APPEARANCE, { firstPerson: true });
+  const [handLeft, handRight] = gorilla.hand;
   root.add(head, group, handLeft, handRight);
-  return { root, head, group, handLeft, handRight };
+  return { root, head, group, gorilla, appearance: DEFAULT_APPEARANCE, handLeft, handRight };
 }
 
 describe('pure helpers', () => {

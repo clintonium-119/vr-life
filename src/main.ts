@@ -13,6 +13,8 @@ import { PropWorld } from './props';
 import { buildTestProps } from './testProps';
 import { buildGrab } from './grab';
 import { tuning } from './movementTuning';
+import { parseLook } from './appearance';
+import { buildGorillaRig } from './gorillaRig';
 
 const container = document.getElementById('app') as HTMLDivElement;
 const overlay = document.getElementById('entry-overlay') as HTMLDivElement;
@@ -42,7 +44,7 @@ scene.add(testSpace);
 // body. Hands are parented to the XR grip-space objects, which the
 // WebXRManager updates from the input-source pose every frame — that is the
 // whole "driving": 1:1 passthrough, no per-frame pose code here.
-const player = buildPlayer(scene, renderer, camera);
+const player = buildPlayer(scene, renderer, camera, parseLook(location.search));
 
 // Movement: the collision world is every surface-tagged mesh; locomotion
 // moves the rig root from hand pushes, gravity and contact.
@@ -55,6 +57,9 @@ const testProps = buildTestProps(scene, propWorld);
 const grab = buildGrab(player, propWorld, tuning, renderer.xr);
 const locomotion = buildLocomotion(player, world, tuning, (hand) => grab.handHolding(hand));
 const audio = buildMovementAudio(locomotion);
+// The gorilla answers the hands: IK arms, lean, sag, gait (after audio so
+// its landed hook chains onto audio's).
+const gorillaRig = buildGorillaRig(player, locomotion);
 grab.events.grab = () => audio.catch();
 const propEvents = {
   bounce: (_prop: unknown, speed: number, surface: Parameters<typeof audio.bounce>[1]) =>
@@ -103,6 +108,7 @@ renderer.setAnimationLoop((time: number) => {
   if (desktopDrive !== null) desktopDrive.update(dt);
   grab.update(dt);
   locomotion.update(dt);
+  gorillaRig.update(dt);
   propWorld.step(dt, world, tuning, propEvents, camera.getWorldPosition(playerPos));
   testProps.update(dt);
   audio.update();
