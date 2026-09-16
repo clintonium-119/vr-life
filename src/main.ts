@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { devFlags } from './config';
+import { buildTestSpace } from './testSpace';
 
 const container = document.getElementById('app') as HTMLDivElement;
 const overlay = document.getElementById('entry-overlay') as HTMLDivElement;
@@ -25,21 +26,11 @@ const camera = new THREE.PerspectiveCamera(
 );
 camera.position.set(0, 1.6, 2);
 
-const light = new THREE.DirectionalLight(0xffffff, 2);
-light.position.set(1, 3, 2);
-scene.add(light, new THREE.AmbientLight(0xffffff, 0.5));
-
-// Placeholder primitive until the test space lands in a later step.
-const placeholder = new THREE.Mesh(
-  new THREE.BoxGeometry(0.2, 0.2, 0.2),
-  new THREE.MeshLambertMaterial({ color: 0x3d8bfd }),
-);
-placeholder.position.set(0, 1.4, -1.5);
-scene.add(placeholder);
+// Debug climbing volume (ground, walls, ledges, overhangs, launch gap);
+// lighting lives inside the group.
+scene.add(buildTestSpace(scene));
 
 renderer.setAnimationLoop(() => {
-  scene.rotation.y += 0; // stable frame; placeholder spins in the test space step
-  placeholder.rotation.y += 0.01;
   renderer.render(scene, camera);
 });
 
