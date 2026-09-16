@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { EYE_HEIGHT_OFFSET_M, type PlayerRig } from './placeholderPlayer';
+import { tuning } from './movementTuning';
+import type { PlayerRig } from './placeholderPlayer';
 
 // Dev-only tools behind the `tools` URL flag: a teleport that moves the
 // player rig root, and a hand-ray visualiser. One deletable module; nothing
@@ -26,6 +27,7 @@ export function buildDevTools(
   camera: THREE.Camera,
   rig: PlayerRig,
   target: THREE.Object3D,
+  onTeleport?: () => void,
 ): DevTools {
   const group = new THREE.Group();
   group.name = 'devTools';
@@ -85,9 +87,10 @@ export function buildDevTools(
     // offset keeps the virtual floor within hand reach.
     rig.root.position.set(
       ray.hit.x - camera.position.x,
-      ray.hit.y - EYE_HEIGHT_OFFSET_M,
+      ray.hit.y - tuning.eyeHeightOffset,
       ray.hit.z - camera.position.z,
     );
+    onTeleport?.();
   }
 
   return {

@@ -5,6 +5,8 @@ import { buildPlayer } from './placeholderPlayer';
 import { PerfSampler } from './perfStats';
 import { buildPerfHud, type PerfHud } from './perfHud';
 import { buildDevTools, type DevTools } from './devTools';
+import { CollisionWorld, collidersFromGroup } from './collision';
+import { buildLocomotion } from './locomotion';
 
 const container = document.getElementById('app') as HTMLDivElement;
 const overlay = document.getElementById('entry-overlay') as HTMLDivElement;
@@ -36,10 +38,16 @@ scene.add(testSpace);
 // whole "driving": 1:1 passthrough, no per-frame pose code here.
 const player = buildPlayer(scene, renderer, camera);
 
+// Movement: the collision world is every surface-tagged mesh; locomotion
+// moves the rig root from hand pushes, gravity and contact.
+const world = new CollisionWorld();
+world.add(...collidersFromGroup(testSpace));
+const locomotion = buildLocomotion(player, world);
+
 // Dev tools (dev flag `tools`): teleport + hand rays. Never constructed
 // without the flag.
 const devTools: DevTools | null = devFlags.tools
-  ? buildDevTools(renderer, camera, player, testSpace)
+  ? buildDevTools(renderer, camera, player, testSpace, () => locomotion.teleportReset())
   : null;
 
 // Perf harness (dev flag `perf`): the sampler samples before the frame's
@@ -57,9 +65,13 @@ function startPerfHarness(sessionRateHz: number | undefined): void {
 }
 if (devFlags.perf) startPerfHarness(undefined);
 
+let lastTime = 0;
 renderer.setAnimationLoop((time: number) => {
+  const dt = lastTime === 0 ? 0 : (time - lastTime) / 1000;
+  lastTime = time;
   if (perfSampler !== null) perfSampler.sample(time);
   if (devTools !== null) devTools.update();
+  locomotion.update(dt);
   renderer.render(scene, camera);
   if (perfHud !== null) perfHud.update(time, renderer);
 });

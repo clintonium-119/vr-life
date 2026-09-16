@@ -15,7 +15,7 @@ const MEMORY_SCAN_INTERVAL_MS = 1000;
 const WARN_REPEAT_MS = 5000;
 
 const CANVAS_W = 448;
-const CANVAS_H = 296;
+const CANVAS_H = 334;
 const FONT = '600 24px ui-monospace, Menlo, monospace';
 const LINE_H = 38;
 
@@ -49,6 +49,7 @@ export function buildPerfHud(
   camera: THREE.PerspectiveCamera,
   sampler: PerfSampler,
   sessionRateHz?: number,
+  extraLines?: () => string[],
 ): PerfHud {
   const rateLine =
     sessionRateHz === undefined
@@ -72,7 +73,7 @@ export function buildPerfHud(
     depthTest: false,
     depthWrite: false,
   });
-  const geometry = new THREE.PlaneGeometry(0.35, 0.23);
+  const geometry = new THREE.PlaneGeometry(0.35, 0.26);
   const quad = new THREE.Mesh(geometry, material);
   quad.name = 'perfHudQuad';
   quad.position.set(-0.4, -0.28, -0.5); // lower-left of view, ~0.5 m out
@@ -121,6 +122,7 @@ export function buildPerfHud(
     line(memoryLine, FG);
     line(rateLine, FG_DIM);
     if (heapLine !== null) line(heapLine, FG_DIM);
+    if (extraLines !== undefined) for (const text of extraLines()) line(text, FG);
     if (warning) line(`!! BELOW ${sampler.floorFps} FPS !!`, FG_WARN);
 
     texture.needsUpdate = true;

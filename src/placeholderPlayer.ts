@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { tuning } from './movementTuning';
 
 // Placeholder player: a knuckle-walker body stub plus always-visible hands
 // and forearms that follow the XR controllers 1:1. Pose is pure passthrough
@@ -10,19 +11,13 @@ export interface PlayerRig {
   /** The one movable root: owns the camera, both grips, and the body. Move
    * this to move the whole player (teleport, later locomotion). */
   root: THREE.Group;
+  /** The XR camera (head), child of root. */
+  head: THREE.Camera;
   /** Body stub, child of root. */
   group: THREE.Group;
   handLeft: THREE.Group;
   handRight: THREE.Group;
 }
-
-/**
- * How far below physical standing height the virtual eye sits, in metres.
- * A knuckle-walker slaps the ground with a relaxed arm swing, so the virtual
- * floor has to be within reach of hands hanging at physical hip height.
- * First guess; tuning for feel is Phase 1.
- */
-export const EYE_HEIGHT_OFFSET_M = 0.5;
 
 const SKIN_COLOR = 0x2b2620;
 const MATT_COLOR = 0x3a332a;
@@ -85,7 +80,7 @@ export function buildPlayer(
   // under the camera's parent, so one transform here moves everything.
   const root = new THREE.Group();
   root.name = 'playerRoot';
-  root.position.y = -EYE_HEIGHT_OFFSET_M;
+  root.position.y = -tuning.eyeHeightOffset; // virtual floor above the physical one
   root.add(camera);
   scene.add(root);
 
@@ -125,5 +120,5 @@ export function buildPlayer(
     root.add(grip);
   }
 
-  return { root, group, handLeft, handRight };
+  return { root, head: camera, group, handLeft, handRight };
 }

@@ -9,8 +9,10 @@ export const tuning = {
   gravity: 9.81,
   /** Body sphere radius, m. */
   bodyRadius: 0.3,
-  /** Body sphere centre this far below the head (camera), m. */
-  bodyDropFromHead: 0.45,
+  /** The virtual floor sits this far above the physical floor, m: the eye
+   * and hands ride lower over the world so a relaxed arm swing slaps the
+   * ground. The one knob that makes ground-running possible. */
+  eyeHeightOffset: 0.5,
   /** Hand contact sphere radius, m. */
   handRadius: 0.07,
   /** Spring rate of the hand hold, 1/s: the rig closes this fraction of the
