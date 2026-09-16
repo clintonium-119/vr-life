@@ -38,7 +38,7 @@ export const PLACES = {
   fire: [25, 0, -148],
   hospital: [95, 0, -113],
   hospitalRoof: [95, 12.2, -130],
-  school: [140, 0, -24],
+  school: [140, 0, -19],
   schoolDropOff: [140, 0.12, -20],
   gym: [176, 0, -40],
   farm: [-110, 0, -8],
