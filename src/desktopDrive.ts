@@ -31,7 +31,7 @@ const AUTO_THROW_AT_S = 6.6;
 const REACH_GRAB_M = 0.45;
 const LOG_PERIOD_S = 1;
 
-type Phase = 'rest' | 'reach' | 'drag' | 'lift' | 'grabReach' | 'grabTo' | 'throw';
+type Phase = 'rest' | 'reach' | 'drag' | 'lift' | 'grabReach' | 'grabTo' | 'throw' | 'raise';
 
 interface Hand {
   group: THREE.Object3D;
@@ -124,6 +124,9 @@ export function buildDesktopDrive(
     else if (e.code === 'Space') {
       stride(hands[0]);
       stride(hands[1]);
+    } else if (e.code === 'KeyH') {
+      hands[1].phase = 'raise';
+      hands[1].elapsed = 0;
     } else if (e.code === 'KeyF' || e.code === 'KeyG') {
       const hand = hands[e.code === 'KeyF' ? 0 : 1];
       hand.phase = 'grabReach';
@@ -142,6 +145,8 @@ export function buildDesktopDrive(
       const hand = hands[e.code === 'KeyF' ? 0 : 1];
       grab.releaseGrip(hand.side < 0 ? 0 : 1);
       hand.phase = 'rest';
+    } else if (e.code === 'KeyH' && hands[1].phase === 'raise') {
+      hands[1].phase = 'rest';
     }
   });
 
@@ -154,7 +159,7 @@ export function buildDesktopDrive(
   let logClock = 0;
 
   console.info(
-    '[vr-life] desktop drive: click to look, J/K stride, Space leap, W/S stride length' +
+    '[vr-life] desktop drive: click to look, J/K stride, Space leap, W/S stride length, F/G grip, H raise hand' +
       (auto ? ' (auto strides on)' : ''),
   );
 
@@ -227,6 +232,11 @@ export function buildDesktopDrive(
         // Swing forward and up fast; the release happens on the timer.
         pos.addScaledVector(_forward, 4 * dt);
         pos.y += 2 * dt;
+        return;
+      case 'raise':
+        // Key held: hand straight up above the head (class hand-raise).
+        _step.set(0.2, 0.45, -0.05).applyQuaternion(_yaw).add(camera.position);
+        pos.lerp(_step, Math.min(1, dt * 10));
         return;
     }
   }

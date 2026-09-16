@@ -47,6 +47,19 @@ For the perf harness on the shipped build, run the same intent with
 `?dev=perf` appended to the URL. There is no QR step: open the Pages URL
 once in Quest Browser and bookmark it.
 
+### The day
+
+The game opens in the bedroom with the alarm ringing. Touch the clock (or
+just move) to start the rush: grab the backpack from the bench by the front
+door, get out, reach the bus stop across the avenue and stand on the bus.
+It drives to the school; the late bus loops back for anyone who missed it,
+and walking to school counts too. In each classroom, raise a hand to be
+called on and touch an answer on the board: three correct passes the class
+and pays money (left wrist); level (right wrist) rises with objectives. In
+the gym, put a basketball through the hoop or a soccer ball in the goal
+three times. Nothing fails the day: wrong answers just bring another
+question.
+
 ### Dev flags
 
 Append `?dev=1` (all dev flags) or `?dev=perf`, `?dev=tools`, `?dev=crowd`
@@ -62,8 +75,9 @@ With `?dev=tools` on a desktop browser (no headset), the desktop drive is
 active: click the canvas to lock the pointer and look around with the
 mouse, `J`/`K` swing the left/right hand through a stride, `Space` swings
 both (a leap), `W`/`S` lengthen/shorten the stride, `F`/`G` hold the
-left/right grip (the hand reaches forward; releasing the key throws). The
-dev teleport is on the trigger. The strokes go through
+left/right grip (the hand reaches forward; releasing the key throws), `H`
+holds the right hand up (raise your hand in class). The dev teleport is on
+the trigger. `day=rush|ride|school|done` jumps the school day for testing. The strokes go through
 the real hand anchors and body, so this exercises the movement model
 without a headset. `&drive=auto` runs alternating strides for five seconds
 after load, then grabs and throws the basketball (used by the host smoke test).

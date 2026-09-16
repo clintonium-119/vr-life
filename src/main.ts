@@ -86,6 +86,7 @@ const schoolDay = buildSchoolDay(
   grab,
   locomotion,
   audio,
+  propWorld,
   location.search,
 );
 

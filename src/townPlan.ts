@@ -40,7 +40,7 @@ export const PLACES = {
   hospitalRoof: [95, 12.2, -130],
   school: [140, 0, -19],
   schoolDropOff: [140, 0.12, -20],
-  gym: [176, 0, -40],
+  gym: [176, 0, -34],
   farm: [-110, 0, -8],
   forest: [0, 0, 45],
   cabin: [40, 0, 95],

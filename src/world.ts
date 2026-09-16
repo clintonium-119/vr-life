@@ -8,7 +8,7 @@ import { buildCabin, buildForest } from './forest';
 import { buildFarm } from './farm';
 import { buildResidential } from './homeBlock';
 import { addCatwalk, addWaterTower, planRoofConnectors, roofGraph } from './rooftops';
-import { buildSchool } from './school';
+import { SCHOOL_BLOCK_Z, buildSchool } from './school';
 import { buildTestSpace } from './testSpace';
 import { buildTownCentre } from './townCentre';
 import { PLACES, buildStreets, parseSpawn, type BuiltDistrict } from './townPlan';
@@ -144,6 +144,9 @@ export function buildWorld(kind: WorldKind, scene: THREE.Scene, query = ''): Wor
       boxA: [7.5, 0, -5.5],
       boxB: [7.5, 0, -4.8],
       barrel: [8.8, 0, -7.5],
+      gymBallA: [PLACES.gym[0] - 2, 0, SCHOOL_BLOCK_Z - 3],
+      gymBallB: [PLACES.gym[0] - 2, 0, SCHOOL_BLOCK_Z + 3],
+      gymSoccer: [PLACES.gym[0] - 6, 0, SCHOOL_BLOCK_Z],
     },
     doorZ: spawnName === 'bedroom' ? residential.house.door[2] : null,
     chunks,

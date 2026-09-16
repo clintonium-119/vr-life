@@ -1,4 +1,5 @@
-import { Vector3 } from 'three';
+import { Box3, Vector3 } from 'three';
+import { SUBJECTS, type Subject } from './dayState';
 import {
   addBuilding,
   addDeskRows,
@@ -20,6 +21,44 @@ import { PLACES, emptyDistrict, type BuiltDistrict } from './townPlan';
 export const SCHOOL_BLOCK_Z = -34;
 export const CLASSROOM_W = 10;
 export const CLASSROOM_D = 8;
+
+export interface ClassroomSpec {
+  subject: Subject;
+  bounds: Box3;
+  /** Board centre on the room's back wall, facing the desks (+z). */
+  boardCentre: [number, number, number];
+  teacherSpot: [number, number, number];
+}
+
+const CLASSROOM_Z = SCHOOL_BLOCK_Z - 2 - CLASSROOM_D / 2;
+
+/** The three classrooms, in hallway order: Math, Science, History. */
+export const CLASSROOMS: ClassroomSpec[] = SUBJECTS.map((subject, i) => {
+  const rx = PLACES.school[0] - 15 + i * 13;
+  return {
+    subject,
+    bounds: new Box3(
+      new Vector3(rx - CLASSROOM_W / 2, 0, CLASSROOM_Z - CLASSROOM_D / 2),
+      new Vector3(rx + CLASSROOM_W / 2, 4, CLASSROOM_Z + CLASSROOM_D / 2),
+    ),
+    boardCentre: [rx, 1.9, CLASSROOM_Z - CLASSROOM_D / 2 + 0.25],
+    teacherSpot: [rx + 2.2, 0, CLASSROOM_Z - CLASSROOM_D / 2 + 1.2],
+  };
+});
+
+/** Gym scoring geometry: the hoop ring and the goal mouth. */
+export const GYM = {
+  hoop: {
+    centre: [PLACES.gym[0] + 9.3, 3.05, SCHOOL_BLOCK_Z] as [number, number, number],
+    radius: 0.3,
+  },
+  goal: {
+    x: PLACES.gym[0] - 9.5,
+    zMin: SCHOOL_BLOCK_Z - 3.66,
+    zMax: SCHOOL_BLOCK_Z + 3.66,
+    yMax: 2.44,
+  },
+};
 
 export function buildSchool(): BuiltDistrict {
   const d = emptyDistrict('school');

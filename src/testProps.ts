@@ -94,6 +94,38 @@ function placements(): PropPlacement[] {
     2.0,
     0.2,
   );
+  for (const id of ['gymBallA', 'gymBallB']) {
+    add(
+      {
+        id,
+        radius: 0.12,
+        mass: 0.6,
+        restitution: 0.75,
+        rollingFriction: 0.8,
+        sizeClass: 'small',
+        important: true,
+        surface: 'wood',
+      },
+      new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 12), ballMaterial),
+      0,
+      0,
+    );
+  }
+  add(
+    {
+      id: 'gymSoccer',
+      radius: 0.11,
+      mass: 0.43,
+      restitution: 0.65,
+      rollingFriction: 0.6,
+      sizeClass: 'small',
+      important: true,
+      surface: 'leaves',
+    },
+    new THREE.Mesh(new THREE.SphereGeometry(0.11, 16, 12), soccerMaterial),
+    0,
+    0,
+  );
   add(
     {
       id: 'backpack',

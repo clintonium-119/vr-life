@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import { buildAlarm, type Alarm } from './alarm';
 import { buildBus, type Bus } from './bus';
+import { buildClassrooms, type Classrooms } from './classroom';
+import { buildGymClass, type GymClass } from './gymClass';
+import type { PropWorld } from './props';
+import { daySeed } from './questions';
 import type { CollisionWorld } from './collision';
 import { DayState, type DayPhase } from './dayState';
 import type { Grab } from './grab';
@@ -42,6 +46,7 @@ export function buildSchoolDay(
   grab: Grab,
   locomotion: Locomotion,
   audio: MovementAudio,
+  props: PropWorld,
   query = '',
 ): SchoolDay {
   const progress = new Progress();
@@ -54,6 +59,8 @@ export function buildSchoolDay(
     ? buildAlarm(rig, day, audio, new THREE.Vector3(...ALARM_CLOCK_POS), world.spawn)
     : null;
   const bus: Bus | null = isTown ? buildBus(scene, collision) : null;
+  const classrooms: Classrooms | null = isTown ? buildClassrooms(scene, rig, day, daySeed()) : null;
+  const gym: GymClass | null = isTown ? buildGymClass(props, day) : null;
 
   // Objectives from the scene.
   const previousGrab = grab.events.grab;
@@ -111,6 +118,8 @@ export function buildSchoolDay(
           day.arriveSchool();
       }
       bus?.update(dt, day, _body);
+      classrooms?.update(dt);
+      gym?.update(dt);
       void locomotion;
     },
   };

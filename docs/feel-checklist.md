@@ -76,6 +76,18 @@ knobs are in the table below.
 | 36  | No interior feels like a confined misery at speed (school hallway, hospital wards, office floors) | [ ]  |                            |
 | 37  | The cabin is found unaided, or its hiding place is documented and defensible (`docs/town-map.md`) | [ ]  |                            |
 
+## Phase 6: the school day
+
+| #   | Item                                                                                                                       | Pass | Notes / measured on device                 |
+| --- | -------------------------------------------------------------------------------------------------------------------------- | ---- | ------------------------------------------ |
+| 38  | Full arc alarm → backpack → bus → three classes → gym playable end to end with zero instruction                            | [ ]  |                                            |
+| 39  | A first-timer catches the bus the majority of attempts (`rushTimerS`, `busWaitS`)                                          | [ ]  | timer: __ s                                |
+| 40  | Standing on the bus: the floor carries you, the rails hold, the ride is a breather not a fade                              | [ ]  | `busSpeed`, `busAccel`: __                 |
+| 41  | Answering feels like part of the game: hand raise is a real gesture, touching a panel feels like reaching, not a form fill | [ ]  | `handRaiseHeight`, `answerTouchRadius`: __ |
+| 42  | Gym balls feel right in the hand; a hoop shot or a goal scores exactly once                                                | [ ]  |                                            |
+| 43  | Wrist displays legible at a glance, invisible otherwise                                                                    | [ ]  |                                            |
+| 44  | Frame floor inside the school moving at speed between classes (teachers and boards in view)                                | [ ]  | calls both eyes: __                        |
+
 ## Knobs (`src/movementTuning.ts`)
 
 | Knob                  | Unit | Default | Turn it…                                                                     |
