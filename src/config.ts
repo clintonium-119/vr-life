@@ -1,5 +1,6 @@
 // Dev flags parsed from the URL query string, e.g. `?dev=1` (all) or
-// `?dev=perf,tools` (individual). Frozen export; force-off in production.
+// `?dev=perf,tools` (individual). Frozen export. The flag is the URL, in
+// every build: the tools ship in the Pages artifact so it can be measured.
 
 export interface DevFlags {
   /** Performance readout / harness UI. */
@@ -10,7 +11,7 @@ export interface DevFlags {
 
 const KNOWN_FLAGS: ReadonlySet<keyof DevFlags> = new Set(['perf', 'tools']);
 
-function parseDevFlags(query: string): DevFlags {
+export function parseDevFlags(query: string): DevFlags {
   const params = new URLSearchParams(query);
   const raw = params.get('dev');
   const flags: DevFlags = { perf: false, tools: false };
@@ -28,12 +29,6 @@ function parseDevFlags(query: string): DevFlags {
   return flags;
 }
 
-function resolve(): DevFlags {
-  if (import.meta.env.PROD) {
-    // Dev flags are meaningless in a production build; force everything off.
-    return { perf: false, tools: false };
-  }
-  return parseDevFlags(window.location.search);
-}
-
-export const devFlags: Readonly<DevFlags> = Object.freeze(resolve());
+export const devFlags: Readonly<DevFlags> = Object.freeze(
+  parseDevFlags(window.location.search),
+);

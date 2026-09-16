@@ -31,5 +31,5 @@ step (GitHub Pages deploy + QR launch; metavr + Chrome remote debugging).
 ### Dev flags
 
 Append `?dev=1` (all dev flags) or `?dev=perf`, `?dev=tools` (individual)
-to the URL in a dev build. Flags are force-off in production builds
-(`npm run build` + `preview` ignores the query string).
+to the URL. Flags work in every build, including the GitHub Pages deploy,
+so the deployed artifact can be measured; they are off unless the URL asks.

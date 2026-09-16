@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { devFlags } from './config';
 import { buildTestSpace } from './testSpace';
 import { buildPlayer } from './placeholderPlayer';
+import { PerfSampler } from './perfStats';
+import { buildPerfHud, type PerfHud } from './perfHud';
 
 const container = document.getElementById('app') as HTMLDivElement;
 const overlay = document.getElementById('entry-overlay') as HTMLDivElement;
@@ -36,8 +38,27 @@ scene.add(buildTestSpace(scene));
 // the whole "driving": 1:1 passthrough, no per-frame pose code here.
 buildPlayer(scene, renderer); // body group is the teleport-rig target from a later dev-tools step
 
-renderer.setAnimationLoop(() => {
+// Perf harness (dev flag `perf`): the sampler samples before the frame's
+// work, the HUD updates after render so renderer.info is fresh. Present in
+// every build; the URL flag is the only gate.
+let perfSampler: PerfSampler | null = null;
+let perfHud: PerfHud | null = null;
+function startPerfHarness(sessionRateHz: number | undefined): void {
+  perfHud?.dispose();
+  // The camera must be in the scene graph for the camera-attached HUD quad
+  // to reach the render list (the renderer traverses the scene, not the
+  // camera).
+  scene.add(camera);
+  perfSampler =
+    sessionRateHz === undefined ? new PerfSampler() : new PerfSampler({ floorFps: sessionRateHz });
+  perfHud = buildPerfHud(scene, camera, perfSampler, sessionRateHz);
+}
+if (devFlags.perf) startPerfHarness(undefined);
+
+renderer.setAnimationLoop((time: number) => {
+  if (perfSampler !== null) perfSampler.sample(time);
   renderer.render(scene, camera);
+  if (perfHud !== null) perfHud.update(time, renderer);
 });
 
 window.addEventListener('resize', () => {
@@ -75,7 +96,10 @@ async function enterVR(): Promise<void> {
       requiredFeatures: ['local-floor'],
     });
     overlay.classList.add('hidden');
-    renderer.xr.setSession(session);
+    await renderer.xr.setSession(session);
+    // The session's negotiated refresh rate is the real frame floor; rebuild
+    // the sampler around it (undefined -> the default floor, HUD says so).
+    if (devFlags.perf) startPerfHarness(session.frameRate ?? undefined);
     session.addEventListener('end', () => {
       overlay.classList.remove('hidden');
       void refreshSupportStatus();
