@@ -147,7 +147,7 @@ renderer.setAnimationLoop((time: number) => {
   gorillaRig.update(dt);
   schoolDay.update(dt);
   worldBuilt.chunks.update(camera.getWorldPosition(playerPos));
-  if (crowd !== null) crowd.update(dt);
+  if (crowd !== null) crowd.update(dt, playerPos);
   propWorld.step(dt, world, tuning, propEvents, camera.getWorldPosition(playerPos));
   testProps.update(dt);
   audio.update();

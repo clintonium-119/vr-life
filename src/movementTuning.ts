@@ -91,6 +91,21 @@ export const tuning = {
   /** A hand within this of an answer panel touches it, m. */
   answerTouchRadius: 0.2,
 
+  // ---- town life ----
+  /** NPCs farther than this from the player are not drawn, m. */
+  npcViewDistanceM: 45,
+  /** Pedestrian stroll speed, m/s. */
+  npcWalkSpeed: 1.2,
+  /** A player passing within this radius above npcReactSpeed knocks an NPC over, m and m/s. */
+  npcReactRadius: 2.5,
+  npcReactSpeed: 4,
+  /** Bumping within this radius knocks an NPC over at any speed, m. */
+  npcBumpRadius: 0.9,
+  /** Shop prices. */
+  priceSnack: 10,
+  priceDye: 40,
+  priceAccessory: 60,
+
   // ---- character pose ----
   /** Torso lean into horizontal motion, degrees per m/s. */
   leanPerMps: 3,

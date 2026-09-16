@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { DEFAULT_APPEARANCE, type Appearance } from './appearance';
-import { buildGorilla, type GorillaParts } from './gorilla';
+import { buildGorilla, setAppearance, type GorillaParts } from './gorilla';
 import { tuning } from './movementTuning';
 
 // The player rig: one root that owns the XR camera, both controller grips,
@@ -20,6 +20,12 @@ export interface PlayerRig {
   appearance: Appearance;
   handLeft: THREE.Group;
   handRight: THREE.Group;
+}
+
+/** Change the player's look at runtime (purchases, unlocks). */
+export function applyPlayerAppearance(rig: PlayerRig, appearance: Appearance): void {
+  setAppearance(rig.gorilla, appearance);
+  rig.appearance = appearance;
 }
 
 export function buildPlayer(
