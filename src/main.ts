@@ -19,6 +19,7 @@ import { buildGorillaCrowd, type GorillaCrowd } from './gorillaCrowd';
 import { buildSchoolDay } from './schoolDay';
 import { buildTownLife } from './townLife';
 import { NpcManager } from './npc';
+import { buildConflict } from './conflict';
 
 const container = document.getElementById('app') as HTMLDivElement;
 const overlay = document.getElementById('entry-overlay') as HTMLDivElement;
@@ -77,6 +78,7 @@ const propEvents = {
     audio.bounce(speed, surface),
 };
 const playerPos = new THREE.Vector3();
+const playerFeet = new THREE.Vector3();
 renderer.domElement.addEventListener('pointerdown', () => audio.resume(), { once: true });
 
 // NPCs (teachers, shopkeepers, pedestrians) share one manager.
@@ -110,13 +112,43 @@ const townLife = buildTownLife(
   npcs,
 );
 
+// Conflict: heat, melee, toy gun, police, prison (town only).
+const conflict =
+  worldBuilt.prison !== null
+    ? buildConflict(
+        world,
+        player,
+        grab,
+        locomotion,
+        npcs,
+        worldBuilt.prison,
+        schoolDay.progress,
+        townLife.shops,
+        audio,
+        renderer.xr,
+        location.search,
+      )
+    : null;
+
 // Crowd (dev flag `crowd`): scripted gorillas for the frame-cost check.
 const crowd: GorillaCrowd | null = devFlags.crowd ? buildGorillaCrowd(scene) : null;
 
 // Dev tools (dev flag `tools`): teleport + hand rays. Never constructed
 // without the flag.
+const holdingController = (i: number): boolean => {
+  const grip = renderer.xr.getControllerGrip(i);
+  const hand = player.handLeft.parent === grip ? 0 : player.handRight.parent === grip ? 1 : i;
+  return grab.handHolding(hand);
+};
 const devTools: DevTools | null = devFlags.tools
-  ? buildDevTools(renderer, camera, player, worldBuilt.group, () => locomotion.teleportReset())
+  ? buildDevTools(
+      renderer,
+      camera,
+      player,
+      worldBuilt.group,
+      () => locomotion.teleportReset(),
+      holdingController,
+    )
   : null;
 // Desktop drive (dev flag `tools`, desktop only): emulated hand strides so
 // the movement model can be exercised in a browser without a headset.
@@ -131,9 +163,13 @@ const desktopDrive: DesktopDrive | null =
         propWorld,
         worldBuilt.doorZ,
         () =>
-          `chunks ${worldBuilt.chunks.visibleCount}/${worldBuilt.chunks.total} day ${schoolDay.day.phase} npcs ${townLife.npcs.visibleCount}/${townLife.npcs.npcs.length}`,
+          `chunks ${worldBuilt.chunks.visibleCount}/${worldBuilt.chunks.total} day ${schoolDay.day.phase} npcs ${townLife.npcs.visibleCount}/${townLife.npcs.npcs.length}` +
+          (conflict !== null
+            ? ` heat ${conflict.heat.value.toFixed(2)} officers ${conflict.police.officers.filter((o) => o.state === 'toPlayer').length}`
+            : ''),
       )
     : null;
+if (desktopDrive !== null && conflict !== null) desktopDrive.onFire = () => conflict.gun.fire(1);
 
 // Perf harness (dev flag `perf`): the sampler samples before the frame's
 // work, the HUD updates after render so renderer.info is fresh. Present in
@@ -168,6 +204,10 @@ renderer.setAnimationLoop((time: number) => {
   schoolDay.update(dt);
   worldBuilt.chunks.update(camera.getWorldPosition(playerPos));
   townLife.update(dt, playerPos);
+  if (conflict !== null) {
+    playerFeet.set(playerPos.x, player.root.position.y + tuning.eyeHeightOffset, playerPos.z);
+    conflict.update(dt, playerFeet);
+  }
   if (crowd !== null) crowd.update(dt, playerPos);
   propWorld.step(dt, world, tuning, propEvents, camera.getWorldPosition(playerPos));
   testProps.update(dt);

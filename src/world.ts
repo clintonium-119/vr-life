@@ -5,6 +5,7 @@ import { ChunkManager } from './chunkManager';
 import { buildCivic } from './civic';
 import { collidersFromGroup, type BoxCollider } from './collision';
 import { buildCabin, buildForest } from './forest';
+import { buildPrison, type PrisonDistrict } from './prison';
 import { buildFarm } from './farm';
 import { buildResidential } from './homeBlock';
 import { addCatwalk, addWaterTower, planRoofConnectors, roofGraph } from './rooftops';
@@ -36,6 +37,8 @@ export interface World {
   /** A plane the auto-drive reports crossing (the front door), if any. */
   doorZ: number | null;
   chunks: ChunkManager;
+  /** The prison (town only); its bars and gate are dynamic colliders. */
+  prison: PrisonDistrict | null;
 }
 
 const ROOF_GAP_M = 4;
@@ -55,12 +58,15 @@ export function buildWorld(kind: WorldKind, scene: THREE.Scene, query = ''): Wor
       propHomes: {},
       doorZ: null,
       chunks: new ChunkManager(),
+      prison: null,
     };
   }
 
   const material = worldMaterial(buildAtlasTexture());
   const residential = buildResidential();
+  const prison = buildPrison();
   const districts: BuiltDistrict[] = [
+    prison,
     buildStreets(),
     residential,
     buildTownCentre(),
@@ -150,5 +156,6 @@ export function buildWorld(kind: WorldKind, scene: THREE.Scene, query = ''): Wor
     },
     doorZ: spawnName === 'bedroom' ? residential.house.door[2] : null,
     chunks,
+    prison,
   };
 }

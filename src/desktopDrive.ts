@@ -46,6 +46,8 @@ interface Hand {
 
 export interface DesktopDrive {
   update(dt: number): void;
+  /** Hook for the `T` key (fire the held toy gun). */
+  onFire: (() => void) | null;
   /** HUD text: velocity and contact state. */
   statusLine(): string;
 }
@@ -124,6 +126,8 @@ export function buildDesktopDrive(
     else if (e.code === 'Space') {
       stride(hands[0]);
       stride(hands[1]);
+    } else if (e.code === 'KeyT') {
+      self.onFire?.();
     } else if (e.code === 'KeyH') {
       hands[1].phase = 'raise';
       hands[1].elapsed = 0;
@@ -159,7 +163,7 @@ export function buildDesktopDrive(
   let logClock = 0;
 
   console.info(
-    '[vr-life] desktop drive: click to look, J/K stride, Space leap, W/S stride length, F/G grip, H raise hand' +
+    '[vr-life] desktop drive: click to look, J/K stride, Space leap, W/S stride length, F/G grip, H raise hand, T fire' +
       (auto ? ' (auto strides on)' : ''),
   );
 
@@ -241,7 +245,8 @@ export function buildDesktopDrive(
     }
   }
 
-  return {
+  const self: DesktopDrive = {
+    onFire: null,
     update(dt: number): void {
       if (!active) return;
       for (const h of hands) advance(h, dt);
@@ -300,4 +305,5 @@ export function buildDesktopDrive(
       return `VEL ${locomotion.velocity.length().toFixed(1)} m/s ${state}`;
     },
   };
+  return self;
 }

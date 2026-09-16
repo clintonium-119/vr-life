@@ -98,6 +98,17 @@ knobs are in the table below.
 | 48  | Earn → spend → equip works end to end: a dye recolours your arms, an accessory shows on your neck                      | [ ]  |                                             |
 | 49  | A player who never punches anyone can complete everything                                                              | [ ]  |                                             |
 
+## Phase 8: conflict and pursuit
+
+| #   | Item                                                                                                           | Pass | Notes / measured on device                        |
+| --- | -------------------------------------------------------------------------------------------------------------- | ---- | ------------------------------------------------- |
+| 50  | A skilled player escapes the police a majority of pursuits; a cautious one is caught sometimes                 | [ ]  | `policeSpeed`, `arrestRadius`, `heatDispatch`: __ |
+| 51  | Officers follow onto roofs believably (climb assist reads as climbing, not floating)                           | [ ]  |                                                   |
+| 52  | Arrest → drag to prison → climb out is fun, not punishing; the soft release is never noticed by a good climber | [ ]  | `prisonReleaseS`, `escortSpeed`: __               |
+| 53  | The rooftop chase is the moment playtesters describe afterwards                                                | [ ]  |                                                   |
+| 54  | Tone 100% slapstick: strikes, pops, falls and sirens read as chaos, never violence                             | [ ]  |                                                   |
+| 55  | Frame floor during a pursuit with three officers and sirens                                                    | [ ]  | calls both eyes: __                               |
+
 ## Knobs (`src/movementTuning.ts`)
 
 | Knob                  | Unit | Default | Turn it…                                                                     |

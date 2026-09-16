@@ -69,6 +69,18 @@ a snack off the shelf, carry it to the counter and let go in front of the
 shopkeeper to pay (see `docs/economy.md` for prices, payouts and level
 unlocks).
 
+### Trouble
+
+Swing a hand fast into a pedestrian and it goes down; the toy gun from the
+convenience store (80) pops them backwards and costs a hand. Either draws
+heat: sirens start and police gorillas come from the station, climbing
+after you. Get caught and an officer drags you to the prison: half your
+money is gone, the gun goes back to the shop, and the cell bars close
+behind you. Climb the bars, cross the hall, scale the yard wall by its
+footholds, and you are out; if you cannot, the bars and gate open after a
+couple of minutes. `heat=1` (dev) starts a pursuit; `T` fires a held gun on
+the desktop.
+
 ### Dev flags
 
 Append `?dev=1` (all dev flags) or `?dev=perf`, `?dev=tools`, `?dev=crowd`
