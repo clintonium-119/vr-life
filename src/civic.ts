@@ -46,7 +46,7 @@ export function buildCivic(): BuiltDistrict {
         uvScale: 1,
       });
   }
-  addSign(d.chunk, [PLACES.police[0], 8.9, PLACES.police[2] - 1.8], [7, 1.2, 0.2], 0x2c5282);
+  addSign(d.chunk, [PLACES.police[0], 8.9, PLACES.police[2] - 1.8], [7, 1.2, 0.2], 0x3182ce);
   addDrainpipe(d.chunk, PLACES.police[0] + 9.3, PLACES.police[2] - 3, 0, 8);
   d.climbAids.push('police:drainpipe');
   d.interiors.push({ chunk: policeInt, bounds: p.interiorBounds });
@@ -106,7 +106,7 @@ export function buildCivic(): BuiltDistrict {
       tint: 0xd4a017,
     });
   }
-  addSign(d.chunk, [fx, 9.6, fz + 8.3], [8, 1.2, 0.2], 0xc53030);
+  addSign(d.chunk, [fx, 9.6, fz + 8.3], [8, 1.2, 0.2], 0xf56565);
   addLadder(d.chunk, fx + 10.3, fz, 0, 9, '+x');
   d.climbAids.push('fire:ladder');
   d.interiors.push({ chunk: fireInt, bounds: f.interiorBounds });
@@ -145,7 +145,7 @@ export function buildCivic(): BuiltDistrict {
   });
   addFireEscape(d.chunk, hx - 20.15, hz, '-x', 3, 4, 0);
   d.climbAids.push('hospital:fireEscape');
-  addSign(d.chunk, [hx, 13.6, hz + 15.3], [12, 1.6, 0.3], 0xe53e3e);
+  addSign(d.chunk, [hx, 13.6, hz + 15.3], [12, 1.6, 0.3], 0xfc8181);
   d.interiors.push({ chunk: hospInt, bounds: h.interiorBounds });
   d.roofs.push({ id: 'hospital', bounds: h.roofBounds, y: h.roofY });
   d.landmarks.hospitalRoof = [hx, h.roofY, hz];

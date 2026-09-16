@@ -25,6 +25,7 @@ const silent: MovementAudio = {
   tone() {},
   chime() {},
   siren() {},
+  context: () => null,
 };
 
 function ground(): CollisionWorld {

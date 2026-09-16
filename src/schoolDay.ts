@@ -9,7 +9,9 @@ import { daySeed } from './questions';
 import type { CollisionWorld } from './collision';
 import { DayState, type DayPhase } from './dayState';
 import type { Grab } from './grab';
-import { ALARM_CLOCK_POS } from './homeHouse';
+import { ALARM_CLOCK_POS, BED_POS } from './homeHouse';
+import { applyPlayerAppearance } from './placeholderPlayer';
+import { browserStorage, clearSave, loadSave, parseReset, recordFrom, writeSave } from './save';
 import type { Locomotion } from './locomotion';
 import type { MovementAudio } from './movementAudio';
 import type { PlayerRig } from './placeholderPlayer';
@@ -53,6 +55,36 @@ export function buildSchoolDay(
 ): SchoolDay {
   const progress = new Progress();
   const day = new DayState(progress);
+
+  // Persistence: load (or reset) before anything reads progress.
+  const storage = browserStorage();
+  if (parseReset(query)) clearSave(storage);
+  const saved = loadSave(storage);
+  if (saved !== null) {
+    progress.restore(saved);
+    day.dayIndex = saved.dayIndex;
+    if (!new URLSearchParams(query).has('look')) applyPlayerAppearance(rig, saved.appearance);
+    console.info(
+      `[vr-life] save: loaded day ${saved.dayIndex}, money ${saved.money}, level ${progress.level}`,
+    );
+  } else {
+    console.info('[vr-life] save: fresh profile');
+  }
+  const save = (): void => {
+    writeSave(storage, recordFrom(progress, rig.appearance, day.dayIndex));
+  };
+  const chainedEvents = progress.events;
+  progress.events = {
+    ...chainedEvents,
+    money: (total, delta) => {
+      chainedEvents.money?.(total, delta);
+      save();
+    },
+    completed: (o) => {
+      chainedEvents.completed?.(o);
+      save();
+    },
+  };
   buildWristDisplays(rig, progress);
 
   // Only the home world has a day; the test space is for movement tuning.
@@ -102,6 +134,14 @@ export function buildSchoolDay(
 
   const stop = new THREE.Vector3(...PLACES.busStop);
   const dropOff = new THREE.Vector3(...PLACES.schoolDropOff);
+  const bed = new THREE.Vector3(...BED_POS);
+  const bedroom = new THREE.Vector3(...PLACES.bedroom);
+  const _hand = new THREE.Vector3();
+  day.events.newDay = (index) => {
+    classrooms?.reseed(daySeed() + index);
+    save();
+    console.info(`[vr-life] day: new day ${index}`);
+  };
 
   return {
     day,
@@ -121,10 +161,25 @@ export function buildSchoolDay(
         if (Math.hypot(_head.x - dropOff.x, _head.z - dropOff.z) < STOP_RADIUS_M)
           day.arriveSchool();
       }
+      // Sleep: a hand on the bed after a done day starts tomorrow.
+      if (day.phase === 'done' && isTown) {
+        for (const hand of [rig.handLeft, rig.handRight]) {
+          hand.getWorldPosition(_hand);
+          if (_hand.distanceTo(bed) <= 0.6) {
+            day.newDay();
+            rig.root.position.set(
+              bedroom.x - rig.head.position.x,
+              bedroom.y - 0.5,
+              bedroom.z - rig.head.position.z,
+            );
+            locomotion.teleportReset();
+            break;
+          }
+        }
+      }
       bus?.update(dt, day, _body);
       classrooms?.update(dt);
       gym?.update(dt);
-      void locomotion;
     },
   };
 }

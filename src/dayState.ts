@@ -22,6 +22,7 @@ export interface DayEvents {
   classPassed?(subject: Subject): void;
   gymScore?(score: number): void;
   gymPassed?(): void;
+  newDay?(dayIndex: number): void;
 }
 
 export class DayState {
@@ -33,6 +34,8 @@ export class DayState {
   atStop = false;
   readonly classCorrect: Record<Subject, number> = { math: 0, science: 0, history: 0 };
   gymScore = 0;
+  /** Days lived (persisted). */
+  dayIndex = 0;
   events: DayEvents = {};
   private lastTimerSecond = -1;
 
@@ -46,6 +49,24 @@ export class DayState {
     if (from === to) return;
     this.phase = to;
     this.events.phase?.(from, to);
+  }
+
+  /** Sleep: tomorrow. Objectives reset; money and level persist. */
+  newDay(): void {
+    this.dayIndex += 1;
+    this.rushElapsed = 0;
+    this.lateBus = false;
+    this.backpackGrabbed = false;
+    this.leftHouse = false;
+    this.atStop = false;
+    this.classCorrect.math = 0;
+    this.classCorrect.science = 0;
+    this.classCorrect.history = 0;
+    this.gymScore = 0;
+    this.lastTimerSecond = -1;
+    this.progress.resetDay();
+    this.goto('asleep');
+    this.events.newDay?.(this.dayIndex);
   }
 
   /** The alarm is silenced or the player moved: the rush begins. */

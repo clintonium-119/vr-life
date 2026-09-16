@@ -41,6 +41,8 @@ export interface MovementAudio {
   chime(kind: 'correct' | 'wrong' | 'bell' | 'score' | 'whoop' | 'cash' | 'thwack' | 'pop'): void;
   /** Police siren loop on/off. */
   siren(on: boolean): void;
+  /** The shared context while running, for the ambience layer. */
+  context(): AudioContext | null;
   /** Per frame: follows body speed for the wind. */
   update(): void;
   dispose(): void;
@@ -173,6 +175,7 @@ export function buildMovementAudio(
   }
 
   return {
+    context: running,
     siren(on): void {
       sirenOn = on;
       const c = running();

@@ -13,6 +13,7 @@ import { SCHOOL_BLOCK_Z, buildSchool } from './school';
 import { buildTestSpace } from './testSpace';
 import { buildTownCentre } from './townCentre';
 import { PLACES, buildStreets, parseSpawn, type BuiltDistrict } from './townPlan';
+import { tuning } from './movementTuning';
 
 // World selection: `world=home` (default) is the whole town, spawning in the
 // bedroom (or at `spawn=<place>` for measurement); `world=test` is the debug
@@ -39,6 +40,13 @@ export interface World {
   chunks: ChunkManager;
   /** The prison (town only); its bars and gate are dynamic colliders. */
   prison: PrisonDistrict | null;
+}
+
+export const SKY_COLOR = 0x9fc5e8;
+
+/** Fog from half the view distance to the view distance. */
+export function fogDistances(viewDistanceM: number): [number, number] {
+  return [viewDistanceM * 0.5, viewDistanceM];
 }
 
 const ROOF_GAP_M = 4;
@@ -126,13 +134,17 @@ export function buildWorld(kind: WorldKind, scene: THREE.Scene, query = ''): Wor
     `[vr-life] world home: ${chunks.total} chunks, ${parts} parts, ${vertices} vertices, ${colliders.length} colliders, ${connectors.length} catwalks`,
   );
 
-  // Static light: one hemisphere, one shadowless sun. Occlusion is baked.
-  const sun = new THREE.DirectionalLight(0xfff1d6, 1.4);
+  // Fixed late afternoon: a warm low sun, a cooler sky/ground hemisphere,
+  // no shadows (occlusion is baked). Fog in the sky colour hides chunk
+  // culling at the view distance.
+  const sun = new THREE.DirectionalLight(0xffd9a8, 1.5);
   sun.name = 'sun';
-  sun.position.set(30, 40, 20);
-  group.add(new THREE.HemisphereLight(0xdfe9f3, 0x6b5a3e, 0.9), sun);
+  sun.position.set(30, 25, 40);
+  group.add(new THREE.HemisphereLight(0xcfe3f5, 0x5e4b34, 0.9), sun);
   scene.add(group);
-  scene.background = new THREE.Color(0x9fc5e8);
+  scene.background = new THREE.Color(SKY_COLOR);
+  const [near, far] = fogDistances(tuning.viewDistanceM);
+  scene.fog = new THREE.Fog(SKY_COLOR, near, far);
 
   const spawnName = parseSpawn(query);
   const [sx, sy, sz] = PLACES[spawnName];

@@ -20,6 +20,9 @@ import { buildSchoolDay } from './schoolDay';
 import { buildTownLife } from './townLife';
 import { NpcManager } from './npc';
 import { buildConflict } from './conflict';
+import { buildAmbience } from './ambience';
+import { DUST_TINT, LEAF_TINT, buildPuffs } from './puffs';
+import { distanceToRoad } from './townPlan';
 
 const container = document.getElementById('app') as HTMLDivElement;
 const overlay = document.getElementById('entry-overlay') as HTMLDivElement;
@@ -130,6 +133,31 @@ const conflict =
       )
     : null;
 
+// Polish: landing puffs (in-world) and the audio bed.
+const puffs = buildPuffs(scene);
+const puffPos = new THREE.Vector3();
+{
+  const previousLanded = locomotion.events.landed;
+  locomotion.events.landed = (speed, surface) => {
+    previousLanded?.(speed, surface);
+    puffPos.set(playerPos.x, player.root.position.y + tuning.eyeHeightOffset + 0.05, playerPos.z);
+    puffs.pool.spawn(
+      puffPos,
+      surface === 'leaves' ? LEAF_TINT : DUST_TINT,
+      0.35 + Math.min(1, speed / 10) * 0.5,
+    );
+  };
+  const previousSlap = locomotion.events.slap;
+  locomotion.events.slap = (speed, surface) => {
+    previousSlap?.(speed, surface);
+    if (speed < 4) return;
+    puffPos.set(playerPos.x, player.root.position.y + tuning.eyeHeightOffset + 0.05, playerPos.z);
+    puffs.pool.spawn(puffPos, surface === 'leaves' ? LEAF_TINT : DUST_TINT, 0.2);
+  };
+}
+const ambience = buildAmbience(audio);
+const ambienceCues = { outdoors: true, roadDistance: 0, aboardBus: false };
+
 // Crowd (dev flag `crowd`): scripted gorillas for the frame-cost check.
 const crowd: GorillaCrowd | null = devFlags.crowd ? buildGorillaCrowd(scene) : null;
 
@@ -211,6 +239,11 @@ renderer.setAnimationLoop((time: number) => {
   if (crowd !== null) crowd.update(dt, playerPos);
   propWorld.step(dt, world, tuning, propEvents, camera.getWorldPosition(playerPos));
   testProps.update(dt);
+  puffs.update(dt);
+  ambienceCues.outdoors = !worldBuilt.chunks.insideInterior(playerPos);
+  ambienceCues.roadDistance = distanceToRoad(playerPos.x, playerPos.z);
+  ambienceCues.aboardBus = schoolDay.bus?.aboard(playerFeet) ?? false;
+  ambience.update(dt, ambienceCues);
   audio.update();
   renderer.render(scene, camera);
   if (perfHud !== null) perfHud.update(time, renderer);

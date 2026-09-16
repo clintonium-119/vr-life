@@ -53,6 +53,8 @@ export function touchedPanel(
 export interface Classrooms {
   group: THREE.Group;
   update(dt: number): void;
+  /** A new day: fresh decks, boards back to idle. */
+  reseed(seed: number): void;
 }
 
 const SUBJECT_LABEL: Record<Subject, string> = {
@@ -193,6 +195,15 @@ export function buildClassrooms(
 
   return {
     group,
+    reseed(seed: number): void {
+      for (const room of rooms) {
+        room.deck = new QuestionDeck(room.spec.subject, seed);
+        room.question = null;
+        room.state = 'idle';
+        room.hold.seconds = 0;
+        drawIdle(room);
+      }
+    },
     update(dt: number): void {
       rig.head.getWorldPosition(_head);
       rig.handLeft.getWorldPosition(_hands[0]);

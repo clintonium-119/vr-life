@@ -20,22 +20,46 @@ export function levelFor(completedCount: number): number {
   return level;
 }
 
+export interface ProgressSnapshot {
+  money: number;
+  lifetime: number;
+  completed: Objective[];
+}
+
 export class Progress {
   money = 0;
   level = 0;
+  /** Objectives ever completed (drives level; never resets). */
+  lifetime = 0;
+  /** Objectives completed today (resets each day). */
   readonly completed = new Set<Objective>();
   events: ProgressEvents = {};
+
+  /** Load a saved profile (no events). */
+  restore(snapshot: ProgressSnapshot): void {
+    this.money = snapshot.money;
+    this.lifetime = snapshot.lifetime;
+    this.completed.clear();
+    for (const o of snapshot.completed) this.completed.add(o);
+    this.level = levelFor(this.lifetime);
+  }
+
+  /** A new day: today's objectives reset; money and level stay. */
+  resetDay(): void {
+    this.completed.clear();
+  }
 
   /** Mark an objective done once and pay for it; repeats are ignored. */
   award(objective: Objective, money: number): boolean {
     if (this.completed.has(objective)) return false;
     this.completed.add(objective);
+    this.lifetime += 1;
     this.events.completed?.(objective);
     if (money > 0) {
       this.money += money;
       this.events.money?.(this.money, money);
     }
-    const level = levelFor(this.completed.size);
+    const level = levelFor(this.lifetime);
     if (level !== this.level) {
       this.level = level;
       this.events.level?.(level);

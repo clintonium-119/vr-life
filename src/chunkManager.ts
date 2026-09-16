@@ -28,6 +28,13 @@ export class ChunkManager {
     return this.chunks.length;
   }
 
+  /** Is the point inside any interior's bounds (a building)? */
+  insideInterior(pos: Vector3): boolean {
+    for (const c of this.chunks)
+      if (c.interiorBounds !== undefined && c.interiorBounds.containsPoint(pos)) return true;
+    return false;
+  }
+
   update(playerPos: Vector3): void {
     let visible = 0;
     const t = this.t;

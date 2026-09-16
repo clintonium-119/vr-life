@@ -40,7 +40,7 @@ export function buildTownCentre(): BuiltDistrict {
       4,
     );
   addCounter(groceryInt, [PLACES.grocery[0] + 10, 0, PLACES.grocery[2] - 4], 6);
-  addSign(d.chunk, [PLACES.grocery[0], 6.8, PLACES.grocery[2] - 2.3], [10, 1.4, 0.2], 0x2f855a);
+  addSign(d.chunk, [PLACES.grocery[0], 6.8, PLACES.grocery[2] - 2.3], [10, 1.4, 0.2], 0x48bb78);
   d.interiors.push({ chunk: groceryInt, bounds: g.interiorBounds });
   d.roofs.push({ id: 'grocery', bounds: g.roofBounds, y: g.roofY });
   addDrainpipe(d.chunk, PLACES.grocery[0] - 16.3, PLACES.grocery[2] - 2.2, 0, 6);
@@ -102,7 +102,7 @@ export function buildTownCentre(): BuiltDistrict {
     addCubicles(officeInt, [PLACES.office[0] - 10, s * 4, PLACES.office[2] - 23.5], 2, 3);
   addFireEscape(d.chunk, PLACES.office[0] + 11.15, PLACES.office[2] - 13, '+x', 5, 4, 0);
   d.climbAids.push('office:fireEscape');
-  addSign(d.chunk, [PLACES.office[0], 21.5, PLACES.office[2] - 2.3], [8, 1.6, 0.3], 0x2b6cb0);
+  addSign(d.chunk, [PLACES.office[0], 21.5, PLACES.office[2] - 2.3], [8, 1.6, 0.3], 0x4299e1);
   d.interiors.push({ chunk: officeInt, bounds: o.interiorBounds });
   d.roofs.push({ id: 'office', bounds: o.roofBounds, y: o.roofY });
   d.landmarks.officeRoof = [PLACES.office[0], o.roofY, PLACES.office[2] - 13];

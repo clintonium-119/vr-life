@@ -11,6 +11,9 @@ export const HOUSE_WIDTH = 9;
 export const HOUSE_DEPTH = 7;
 export const WALL_HEIGHT = 3.2;
 
+/** World position of the bed's centre (house at the origin). */
+export const BED_POS: [number, number, number] = [-3.0, HOUSE_FLOOR_Y + 0.6, 2.2];
+
 /** World position of the alarm clock (house at the origin). */
 export const ALARM_CLOCK_POS: [number, number, number] = [-1.7, HOUSE_FLOOR_Y + 0.66, 3.0];
 

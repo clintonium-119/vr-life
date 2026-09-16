@@ -133,6 +133,11 @@ export const tuning = {
   fineFraction: 0.5,
   fineMin: 20,
 
+  // ---- polish ----
+  /** Ambience and music bed gains (0..1). */
+  ambienceGain: 0.15,
+  musicGain: 0.08,
+
   // ---- character pose ----
   /** Torso lean into horizontal motion, degrees per m/s. */
   leanPerMps: 3,
