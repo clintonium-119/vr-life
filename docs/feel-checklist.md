@@ -1,0 +1,70 @@
+# Movement feel checklist
+
+The Phase 1 acceptance is feel, judged on a Meta Quest 3 against the GitHub
+Pages build with `?dev=perf,tools`. Nothing here is checked until it has
+been felt on the headset; a desktop pass counts for nothing. Tune with
+`tune=` URL overrides (no redeploy), then write the winners back into
+`src/movementTuning.ts` and record the final URL at the bottom.
+
+## Checklist (brief §4 "what good feels like", roadmap Phase 1)
+
+| #   | Item                                                                                             | Pass | Notes / measured on device                   |
+| --- | ------------------------------------------------------------------------------------------------ | ---- | -------------------------------------------- |
+| 1   | Weighty: a heavy thing, not a balloon; momentum builds over a few strides                        | [ ]  |                                              |
+| 2   | Landings feel solid (body thud, no bounce, no float)                                             | [ ]  |                                              |
+| 3   | Sloppy vs. clean push is obvious in the body, not in a number                                    | [ ]  |                                              |
+| 4   | Turning by physically turning; nothing else turns the view                                       | [ ]  |                                              |
+| 5   | No float: gravity always on when no hand holds; no mid-air drag                                  | [ ]  |                                              |
+| 6   | No mush: hand hold is crisp, release is immediate                                                | [ ]  |                                              |
+| 7   | Wall at speed → slide along it, not a dead stop, never a pass-through                            | [ ]  |                                              |
+| 8   | Ground-slap running: alternating slaps read as a stride                                          | [ ]  |                                              |
+| 9   | Climbing: haul up ledges and faces; hands stick where they land                                  | [ ]  |                                              |
+| 10  | Wall launch: push off a face and fly, momentum carried                                           | [ ]  |                                              |
+| 11  | Alternating single-hand stride ≈ two-handed leap distance                                        | [ ]  | stride: __ m, leap: __ m, `twoHandScale`: __ |
+| 12  | A first-timer shuffles around within ~30 s, no instruction                                       | [ ]  |                                              |
+| 13  | Surface-aware audio: ground, stone, wood, metal all sound different; wind at speed; landing thud | [ ]  |                                              |
+| 14  | Frame floor sustained at top speed for ≥60 s (harness shows no warning)                          | [ ]  | session rate: __ Hz                          |
+| 15  | Eye height reads as a gorilla: relaxed downward swing slaps the ground; ledges within reach      | [ ]  | `eyeHeightOffset`: __                        |
+
+## Knobs (`src/movementTuning.ts`)
+
+| Knob                  | Unit | Default | Turn it…                                                                     |
+| --------------------- | ---- | ------- | ---------------------------------------------------------------------------- |
+| `gravity`             | m/s² | 9.81    | up for snappier falls; probably leave                                        |
+| `bodyRadius`          | m    | 0.3     | up if the body clips ledges; down if it snags doorways                       |
+| `eyeHeightOffset`     | m    | 0.5     | up to sit lower / reach the ground more easily; down if ledges feel too high |
+| `handRadius`          | m    | 0.07    | up if slaps miss thin geometry; down if hands stick early                    |
+| `handStiffness`       | 1/s  | 30      | up for a crisper, lighter hold; down for more weight and lag                 |
+| `handReleaseDistance` | m    | 0.03    | up if hands drop off too easily; down if release feels late                  |
+| `handSlipBreak`       | m    | 0.25    | up if long pulls break the hold; down if hands drag through geometry         |
+| `twoHandScale`        | –    | 0.6     | up if leaps feel weak next to strides; down if leaps dominate                |
+| `speedCap`            | m/s  | 14      | up if the cap is reached too easily                                          |
+| `groundFriction`      | 1/s  | 2.5     | up if the body coasts on the ground; down if it stops dead                   |
+| `velocitySmoothing`   | s    | 0.2     | up if release speed is jittery; down if release feels laggy                  |
+| `maxSubstepDistance`  | m    | 0.15    | leave; lower only if tunneling ever appears                                  |
+| `landingThudSpeed`    | m/s  | 2.5     | up if every step thuds; down if landings are silent                          |
+| `windStartSpeed`      | m/s  | 4       | up if wind is constant; down if it never appears                             |
+
+Example: `https://clintonium-119.github.io/vr-life/?dev=perf,tools&tune=handStiffness=40,eyeHeightOffset=0.6`
+
+## On-device procedure
+
+1. `npm run launch` with the flags and `tune=` appended (see `docs/device-debugging.md` §5).
+2. Run items 8–10 in the test space: ground run to the wall bank, climb `wallA` via `ledge1`/`ledge2`, launch off `wallTall`, slide along `wallB` at speed.
+3. Item 11: teleport (grip squeeze with the tools flag) to the gap edge. Ten alternating strides from rest; read the HUD `VEL` and the console `rig at` log for distance. Repeat with ten two-handed leaps. Adjust `twoHandScale` until the two are comparable.
+4. Item 14: idle 60 s and then sprint 60 s with the harness on; no warning state.
+5. Record every measured value in the table, write the tuned defaults into `src/movementTuning.ts`, and paste the final URL below.
+
+## Host smoke test (no headset)
+
+```sh
+npm run build && npm run preview &   # serves the production build on :4173
+npm run smoke                        # headless Chromium, 9 s of auto strides
+```
+
+Passes when the rig moved more than 1 m with no exceptions. This proves the
+code path runs; it says nothing about feel.
+
+## Final tuned URL
+
+_Not yet tuned on device._

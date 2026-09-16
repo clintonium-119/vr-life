@@ -119,6 +119,21 @@ adb shell am start -a android.intent.action.VIEW -d <url> com.oculus.browser
 Attach DevTools as in section 2. This is the build the Phase 0 Definition of
 Done is measured on.
 
+## 6. Host smoke test (no headset)
+
+```sh
+npm run build
+npm run preview &          # production build on http://localhost:4173/vr-life/
+npm run smoke              # node scripts/smoke.mjs <url> 9
+```
+
+`scripts/smoke.mjs` opens the URL in headless Chromium over the DevTools
+protocol, streams the console for nine real seconds (virtual-time budgets do
+not drive `requestAnimationFrame` under SwiftShader), and exits non-zero if
+the rig did not move at least 1 m or anything threw. It exercises the
+movement code path with the desktop drive's auto strides; it is not a feel
+test.
+
 ## Timing targets
 
 | Loop  | Target                                              | Measured         |

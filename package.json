@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "launch": "adb shell am start -a android.intent.action.VIEW -d https://clintonium-119.github.io/vr-life/",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "smoke": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto' 9"
   },
   "dependencies": {
     "three": "^0.186.0"
