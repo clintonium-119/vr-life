@@ -30,6 +30,8 @@ export interface Locomotion {
   readonly velocity: THREE.Vector3;
   readonly anchored: boolean;
   readonly grounded: boolean;
+  /** Whether hand 0 (left) / 1 (right) currently holds a surface. */
+  handAnchored(index: number): boolean;
   events: LocomotionEvents;
   /** Forget all motion (after a dev teleport). */
   teleportReset(): void;
@@ -76,6 +78,9 @@ export function buildLocomotion(
     },
     get grounded(): boolean {
       return body.grounded;
+    },
+    handAnchored(index: number): boolean {
+      return anchors[index]?.state === 'anchored';
     },
 
     update(rawDt: number): void {

@@ -7,6 +7,8 @@ import { buildPerfHud, type PerfHud } from './perfHud';
 import { buildDevTools, type DevTools } from './devTools';
 import { CollisionWorld, collidersFromGroup } from './collision';
 import { buildLocomotion } from './locomotion';
+import { buildMovementAudio } from './movementAudio';
+import { buildDesktopDrive, type DesktopDrive } from './desktopDrive';
 
 const container = document.getElementById('app') as HTMLDivElement;
 const overlay = document.getElementById('entry-overlay') as HTMLDivElement;
@@ -43,12 +45,20 @@ const player = buildPlayer(scene, renderer, camera);
 const world = new CollisionWorld();
 world.add(...collidersFromGroup(testSpace));
 const locomotion = buildLocomotion(player, world);
+const audio = buildMovementAudio(locomotion);
+renderer.domElement.addEventListener('pointerdown', () => audio.resume(), { once: true });
 
 // Dev tools (dev flag `tools`): teleport + hand rays. Never constructed
 // without the flag.
 const devTools: DevTools | null = devFlags.tools
   ? buildDevTools(renderer, camera, player, testSpace, () => locomotion.teleportReset())
   : null;
+// Desktop drive (dev flag `tools`, desktop only): emulated hand strides so
+// the movement model can be exercised in a browser without a headset.
+const desktopDrive: DesktopDrive | null =
+  devFlags.tools && !renderer.xr.isPresenting
+    ? buildDesktopDrive(renderer, camera, player, locomotion)
+    : null;
 
 // Perf harness (dev flag `perf`): the sampler samples before the frame's
 // work, the HUD updates after render so renderer.info is fresh. Present in
@@ -61,7 +71,11 @@ function startPerfHarness(sessionRateHz: number | undefined): void {
   // is in the scene graph via the player rig.
   perfSampler =
     sessionRateHz === undefined ? new PerfSampler() : new PerfSampler({ floorFps: sessionRateHz });
-  perfHud = buildPerfHud(scene, camera, perfSampler, sessionRateHz);
+  perfHud = buildPerfHud(scene, camera, perfSampler, sessionRateHz, () => [
+    `VEL ${locomotion.velocity.length().toFixed(1)} m/s ${
+      locomotion.anchored ? 'HOLD' : locomotion.grounded ? 'GROUND' : 'AIR'
+    }`,
+  ]);
 }
 if (devFlags.perf) startPerfHarness(undefined);
 
@@ -71,7 +85,9 @@ renderer.setAnimationLoop((time: number) => {
   lastTime = time;
   if (perfSampler !== null) perfSampler.sample(time);
   if (devTools !== null) devTools.update();
+  if (desktopDrive !== null) desktopDrive.update(dt);
   locomotion.update(dt);
+  audio.update();
   renderer.render(scene, camera);
   if (perfHud !== null) perfHud.update(time, renderer);
 });
@@ -107,6 +123,7 @@ async function refreshSupportStatus(): Promise<boolean> {
 async function enterVR(): Promise<void> {
   try {
     if (!navigator.xr) throw new Error('WebXR not available');
+    audio.resume(); // same gesture as the session request
     const session = await navigator.xr.requestSession('immersive-vr', {
       requiredFeatures: ['local-floor'],
     });
