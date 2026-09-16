@@ -63,6 +63,14 @@ export const tuning = {
   /** …after this long at rest, s. */
   recallSeconds: 10,
 
+  // ---- world ----
+  /** Chunks farther than this (edge to player) are not drawn, m. */
+  viewDistanceM: 120,
+  /** Interiors show when the player is within this of their building, m. */
+  interiorDoorMarginM: 2.5,
+  /** Collision grid cell size, m. */
+  collisionCellM: 8,
+
   // ---- character pose ----
   /** Torso lean into horizontal motion, degrees per m/s. */
   leanPerMps: 3,

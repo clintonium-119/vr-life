@@ -1,12 +1,15 @@
 import { Box3, Matrix4, Quaternion, Vector3, type Object3D, type Mesh } from 'three';
+import { tuning } from './movementTuning';
+import { SpatialGrid } from './spatialGrid';
 
 // The collision world: oriented boxes only. Every collidable mesh contributes
 // one box from its geometry bounds and world transform, tagged with a surface
 // type that the audio reads. Pure math (three's math classes only), so the
 // hand anchors and the body sphere can be unit-tested in Node.
 //
-// ponytail: linear scan over a few dozen boxes; add a grid or BVH when the
-// town arrives and the count passes a few hundred.
+// Static colliders live in a uniform spatial grid (the whole town stays
+// loaded and solid regardless of what is drawn); movers go in a small
+// always-tested dynamic list.
 
 export type SurfaceTag = 'ground' | 'stone' | 'wood' | 'metal' | 'leaves';
 
@@ -171,35 +174,77 @@ export function sphereBoxContact(
 }
 
 const _scratch = makeContact();
+const _corner = new Vector3();
+
+/** World-space AABB of a collider. */
+export function colliderAABB(c: BoxCollider, out: Box3): Box3 {
+  out.makeEmpty();
+  const h = c.halfExtents;
+  for (let i = 0; i < 8; i++) {
+    _corner
+      .set(i & 1 ? h.x : -h.x, i & 2 ? h.y : -h.y, i & 4 ? h.z : -h.z)
+      .applyMatrix4(c.boxToWorld);
+    out.expandByPoint(_corner);
+  }
+  return out;
+}
+
+const _aabb = new Box3();
 
 export class CollisionWorld {
+  /** Every collider, static and dynamic (for inspection / counting). */
   readonly colliders: BoxCollider[] = [];
+  /** Movers: re-tested every query, refreshed by the owner via updateCollider. */
+  readonly dynamic: BoxCollider[] = [];
+  private readonly grid: SpatialGrid<BoxCollider>;
 
+  constructor(cellM: number = tuning.collisionCellM) {
+    this.grid = new SpatialGrid<BoxCollider>(cellM);
+  }
+
+  /** Static colliders: inserted into the grid by their world bounds. */
   add(...colliders: BoxCollider[]): void {
-    this.colliders.push(...colliders);
+    for (const c of colliders) {
+      this.colliders.push(c);
+      colliderAABB(c, _aabb);
+      this.grid.insert(c, _aabb.min, _aabb.max);
+    }
+  }
+
+  /** Moving colliders (platforms, the bus): always tested. */
+  addDynamic(...colliders: BoxCollider[]): void {
+    for (const c of colliders) {
+      this.colliders.push(c);
+      this.dynamic.push(c);
+    }
+  }
+
+  private visit(center: Vector3, radius: number, cb: (c: BoxCollider) => void): void {
+    this.grid.forEachNear(center, radius, cb);
+    for (const c of this.dynamic) cb(c);
   }
 
   /** Deepest contact for the sphere, if any. */
   nearest(center: Vector3, radius: number, out: Contact): boolean {
     let found = false;
     let best = -Infinity;
-    for (const c of this.colliders) {
-      if (!sphereBoxContact(center, radius, c, _scratch)) continue;
-      if (_scratch.depth <= best) continue;
+    this.visit(center, radius, (c) => {
+      if (!sphereBoxContact(center, radius, c, _scratch)) return;
+      if (_scratch.depth <= best) return;
       best = _scratch.depth;
       out.point.copy(_scratch.point);
       out.normal.copy(_scratch.normal);
       out.depth = _scratch.depth;
       out.collider = _scratch.collider;
       found = true;
-    }
+    });
     return found;
   }
 
   /** Every contact for the sphere; the contact object is reused per call. */
   forEachContact(center: Vector3, radius: number, cb: (contact: Contact) => void): void {
-    for (const c of this.colliders) {
+    this.visit(center, radius, (c) => {
       if (sphereBoxContact(center, radius, c, _scratch)) cb(_scratch);
-    }
+    });
   }
 }

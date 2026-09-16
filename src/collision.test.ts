@@ -101,12 +101,15 @@ describe('moving colliders and the world', () => {
     const m = new Matrix4();
     const c = makeBoxCollider('m', 'metal', unitBox(), m);
     const out = makeContact();
+    const world = new CollisionWorld();
+    world.addDynamic(c);
+    expect(world.nearest(new Vector3(0, 1.2, 0), 0.3, out)).toBe(true);
     expect(sphereBoxContact(new Vector3(0, 1.2, 0), 0.3, c, out)).toBe(true);
     expect(out.point.x).toBeCloseTo(0);
     m.setPosition(3, 0, 0);
     updateCollider(c);
     expect(sphereBoxContact(new Vector3(0, 1.2, 0), 0.3, c, out)).toBe(false);
-    expect(sphereBoxContact(new Vector3(3, 1.2, 0), 0.3, c, out)).toBe(true);
+    expect(world.nearest(new Vector3(3, 1.2, 0), 0.3, out)).toBe(true);
     expect(out.point.x).toBeCloseTo(3);
   });
 

@@ -45,7 +45,10 @@ describe("the player's house", () => {
           probe(x, HOUSE_FLOOR_Y + 1.2, z),
           `door at z=${z} x=${x} hit ${out.collider?.id} depth ${out.depth}`,
         ).toBe(false);
-        expect(probe(x, HOUSE_FLOOR_Y + 2.15, z), `door top at z=${z} x=${x} hit ${out.collider?.id} depth ${out.depth}`).toBe(false);
+        expect(
+          probe(x, HOUSE_FLOOR_Y + 2.15, z),
+          `door top at z=${z} x=${x} hit ${out.collider?.id} depth ${out.depth}`,
+        ).toBe(false);
       }
       expect(probe(1.0, HOUSE_FLOOR_Y + 1.2, z)).toBe(true); // pier beside the opening
     }

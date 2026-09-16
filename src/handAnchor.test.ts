@@ -95,7 +95,7 @@ describe('HandAnchor', () => {
       new Box3(new Vector3(-2, -0.5, -2), new Vector3(2, 0, 2)),
       m,
     );
-    w.add(platform);
+    w.addDynamic(platform);
     const a = new HandAnchor(w);
     const hand = onGround(0, 0);
     a.update(hand, DT);
