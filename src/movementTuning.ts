@@ -71,6 +71,26 @@ export const tuning = {
   /** Collision grid cell size, m. */
   collisionCellM: 8,
 
+  // ---- school day ----
+  /** Morning-rush timer before the bus leaves without you, s. Generous. */
+  rushTimerS: 60,
+  /** Money for passing a class / gym. */
+  classPayout: 50,
+  gymPayout: 50,
+  /** Correct answers to pass a class; scores to pass gym. */
+  passCorrect: 3,
+  passScores: 3,
+  /** Bus cruise speed, m/s, and acceleration, m/s². */
+  busSpeed: 8,
+  busAccel: 1.5,
+  /** Bus dwell at each stop, s. */
+  busWaitS: 20,
+  /** A hand this far above the head counts as raised, m; held this long, s. */
+  handRaiseHeight: 0.15,
+  handRaiseHoldS: 0.5,
+  /** A hand within this of an answer panel touches it, m. */
+  answerTouchRadius: 0.2,
+
   // ---- character pose ----
   /** Torso lean into horizontal motion, degrees per m/s. */
   leanPerMps: 3,
