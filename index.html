@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%233d8bfd'/%3E%3C/svg%3E"
+    />
+    <title>vr-life</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #101418;
+        color: #e8edf2;
+        font-family: system-ui, sans-serif;
+        overflow: hidden;
+      }
+      #app {
+        position: fixed;
+        inset: 0;
+      }
+      #entry-overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: rgba(10, 14, 18, 0.92);
+        z-index: 10;
+      }
+      #entry-overlay.hidden {
+        display: none;
+      }
+      #enter-vr {
+        padding: 14px 28px;
+        font-size: 18px;
+        border: 1px solid #3d4b5c;
+        border-radius: 8px;
+        background: #1b2531;
+        color: #e8edf2;
+        cursor: pointer;
+      }
+      #enter-vr:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      #entry-status {
+        font-size: 14px;
+        color: #9fb0c3;
+        max-width: 32ch;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="entry-overlay">
+      <button id="enter-vr">Enter VR</button>
+      <p id="entry-status"></p>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
