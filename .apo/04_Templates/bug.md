@@ -1,0 +1,40 @@
+---
+note_type: item
+template_version: 1
+contract_version: 1
+title: "<bug-title>"
+owner: ""
+created: '<TODAY>'
+updated: '<TODAY>'
+tags: [apovault, item]
+item_id: "<BUG-NNNN>"
+kind: bug
+workstream: "[[02_Work/<branch-path>/workstream|<branch-name>]]"
+affected_phases: []
+affected_steps: []
+acceptance_criteria: []
+external_refs: []
+attachments: []
+---
+
+# BUG-NNNN — <bug-title>
+
+## Symptom
+
+_What the user sees. Embed inline attachments: `![alt](_assets/BUG-NNNN/screenshot.png)`._
+
+## Reproduction
+
+_Numbered steps to reproduce. Embed logs/screenshots as needed._
+
+## Root cause
+
+(verify)
+
+## Fix plan
+
+(verify)
+
+## Verification
+
+(verify)

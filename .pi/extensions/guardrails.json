@@ -1,0 +1,36 @@
+{
+  "$schema": "https://unpkg.com/@aliou/pi-guardrails@0.17.1/schema.json",
+  "pathAccess": {
+    "allowedPaths": [
+      {
+        "kind": "file",
+        "path": "~/.apo"
+      },
+      {
+        "kind": "file",
+        "path": "~/.apo/projects.json"
+      },
+      {
+        "kind": "file",
+        "path": "/tmp/projects.json"
+      },
+      {
+        "kind": "file",
+        "path": "~/.apo/vaults"
+      },
+      {
+        "kind": "file",
+        "path": "~/.apo/vaults/vr-life"
+      },
+      {
+        "kind": "file",
+        "path": "~/src/github/clintonium-119/apo"
+      },
+      {
+        "kind": "file",
+        "path": "~/src/github/clintonium-119/apo/.apo/04_Templates/*.md"
+      }
+    ]
+  },
+  "version": "0.17.1"
+}
