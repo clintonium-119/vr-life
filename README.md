@@ -60,6 +60,15 @@ the gym, put a basketball through the hoop or a soccer ball in the goal
 three times. Nothing fails the day: wrong answers just bring another
 question.
 
+### Town life
+
+Pedestrian gorillas stroll the sidewalks; sprint past or bump into one
+and it goes down with a whoop, sits up dazed, and carries on. The grocery
+and the convenience store are staffed: take a dye can, an accessory box or
+a snack off the shelf, carry it to the counter and let go in front of the
+shopkeeper to pay (see `docs/economy.md` for prices, payouts and level
+unlocks).
+
 ### Dev flags
 
 Append `?dev=1` (all dev flags) or `?dev=perf`, `?dev=tools`, `?dev=crowd`

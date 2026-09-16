@@ -1,10 +1,8 @@
 import * as THREE from 'three';
 import { PALETTE } from './appearance';
 import type { DayState, Subject } from './dayState';
-import { buildGorilla } from './gorilla';
-import { advancePose, makePose } from './gorillaPose';
-import { applyGorillaPose } from './gorillaRig';
 import { tuning, type MovementTuning } from './movementTuning';
+import { Npc, type NpcManager } from './npc';
 import type { PlayerRig } from './placeholderPlayer';
 import { QuestionDeck, type Question } from './questions';
 import { CLASSROOMS, type ClassroomSpec } from './school';
@@ -86,6 +84,7 @@ export function buildClassrooms(
   scene: THREE.Scene,
   rig: PlayerRig,
   day: DayState,
+  npcs: NpcManager,
   seed: number,
   t: MovementTuning = tuning,
 ): Classrooms {
@@ -93,30 +92,23 @@ export function buildClassrooms(
   group.name = 'classrooms';
   scene.add(group);
 
+  // Teachers and boards are only drawn while the player is in the school
+  // block (the interior chunk rule), so they never cost from outside.
+  const schoolBounds = new THREE.Box3();
+  for (const spec of CLASSROOMS) schoolBounds.union(spec.bounds);
+  schoolBounds.expandByScalar(12);
+
   const rooms: Room[] = CLASSROOMS.map((spec, i) => {
-    // Teacher: a third-person gorilla facing the desks.
-    const teacher = buildGorilla({
-      bodyColor: (i + 2) % PALETTE.length,
-      accessories: ['band', 'none'],
-    });
-    teacher.root.position.set(spec.teacherSpot[0], 0.85, spec.teacherSpot[2]);
-    teacher.root.rotation.y = Math.PI; // face +z (toward the desks)
-    for (const h of teacher.hand) teacher.root.add(h);
-    teacher.hand[0].position.set(-0.3, -0.85, 0.35);
-    teacher.hand[1].position.set(0.3, -0.85, 0.35);
-    group.add(teacher.root);
-    const pose = makePose();
-    advancePose(
-      pose,
-      { velocity: new THREE.Vector3(), grounded: true, landingImpulse: 0 },
-      1 / 60,
-      t,
+    // Teacher: a standing NPC facing the desks.
+    npcs.add(
+      new Npc({
+        role: 'teacher',
+        appearance: { bodyColor: (i + 2) % PALETTE.length, accessories: ['band', 'none'] },
+        position: new THREE.Vector3(spec.teacherSpot[0], 0, spec.teacherSpot[2]),
+        yaw: Math.PI,
+        visibleWithin: schoolBounds,
+      }),
     );
-    const handsWorld: [THREE.Vector3, THREE.Vector3] = [new THREE.Vector3(), new THREE.Vector3()];
-    teacher.root.updateWorldMatrix(true, true);
-    teacher.hand[0].getWorldPosition(handsWorld[0]);
-    teacher.hand[1].getWorldPosition(handsWorld[1]);
-    applyGorillaPose(teacher, pose, handsWorld, t);
 
     // Board and four answer panels on the back wall, facing +z.
     const board = buildTextQuad({
@@ -198,12 +190,6 @@ export function buildClassrooms(
     room.state = 'asked';
     drawQuestion(room, room.question);
   }
-
-  // Teachers and boards are only drawn while the player is in the school
-  // block (the interior chunk rule), so they never cost from outside.
-  const schoolBounds = new THREE.Box3();
-  for (const spec of CLASSROOMS) schoolBounds.union(spec.bounds);
-  schoolBounds.expandByScalar(12);
 
   return {
     group,

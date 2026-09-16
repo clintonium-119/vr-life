@@ -129,6 +129,7 @@ npm run smoke:crowd        # same with ?dev=crowd and a --max-calls 400 budget
 npm run smoke:home         # default world; requires the "door crossed" log
 npm run smoke:town         # bedroom, office roof, hospital roof, school, farm, forest spawns
 npm run smoke:day          # bedroom; requires the "day: rush" and "door crossed" logs
+npm run smoke:shop         # grocery spawn with a finished day (money to spend)
 ```
 
 `scripts/smoke.mjs` opens the URL in headless Chromium over the DevTools

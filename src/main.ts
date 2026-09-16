@@ -18,6 +18,7 @@ import { buildGorillaRig } from './gorillaRig';
 import { buildGorillaCrowd, type GorillaCrowd } from './gorillaCrowd';
 import { buildSchoolDay } from './schoolDay';
 import { buildTownLife } from './townLife';
+import { NpcManager } from './npc';
 
 const container = document.getElementById('app') as HTMLDivElement;
 const overlay = document.getElementById('entry-overlay') as HTMLDivElement;
@@ -78,6 +79,10 @@ const propEvents = {
 const playerPos = new THREE.Vector3();
 renderer.domElement.addEventListener('pointerdown', () => audio.resume(), { once: true });
 
+// NPCs (teachers, shopkeepers, pedestrians) share one manager.
+const npcs = new NpcManager();
+scene.add(npcs.group);
+
 // The school day: alarm, rush, bus, classes, gym; wrist displays.
 const schoolDay = buildSchoolDay(
   scene,
@@ -88,6 +93,7 @@ const schoolDay = buildSchoolDay(
   locomotion,
   audio,
   propWorld,
+  npcs,
   location.search,
 );
 
@@ -101,6 +107,7 @@ const townLife = buildTownLife(
   locomotion,
   schoolDay.progress,
   audio,
+  npcs,
 );
 
 // Crowd (dev flag `crowd`): scripted gorillas for the frame-cost check.

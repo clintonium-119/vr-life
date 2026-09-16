@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { Grab } from './grab';
 import type { Locomotion } from './locomotion';
 import type { MovementAudio } from './movementAudio';
-import { NpcManager } from './npc';
+import type { NpcManager } from './npc';
 import { buildPedestrians, type Pedestrians } from './pedestrians';
 import type { PlayerRig } from './placeholderPlayer';
 import type { Progress } from './progress';
@@ -28,9 +28,8 @@ export function buildTownLife(
   locomotion: Locomotion,
   progress: Progress,
   audio: MovementAudio,
+  npcs: NpcManager,
 ): TownLife {
-  const npcs = new NpcManager();
-  scene.add(npcs.group);
   const isTown = world.kind === 'home';
   const pedestrians = isTown ? buildPedestrians(npcs, audio) : null;
   const shops = isTown ? buildShops(scene, props, grab, npcs, progress, rig, audio) : null;

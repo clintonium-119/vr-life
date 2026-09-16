@@ -4,6 +4,7 @@ import { buildBus, type Bus } from './bus';
 import { buildClassrooms, type Classrooms } from './classroom';
 import { buildGymClass, type GymClass } from './gymClass';
 import type { PropWorld } from './props';
+import type { NpcManager } from './npc';
 import { daySeed } from './questions';
 import type { CollisionWorld } from './collision';
 import { DayState, type DayPhase } from './dayState';
@@ -47,6 +48,7 @@ export function buildSchoolDay(
   locomotion: Locomotion,
   audio: MovementAudio,
   props: PropWorld,
+  npcs: NpcManager,
   query = '',
 ): SchoolDay {
   const progress = new Progress();
@@ -59,7 +61,9 @@ export function buildSchoolDay(
     ? buildAlarm(rig, day, audio, new THREE.Vector3(...ALARM_CLOCK_POS), world.spawn)
     : null;
   const bus: Bus | null = isTown ? buildBus(scene, collision) : null;
-  const classrooms: Classrooms | null = isTown ? buildClassrooms(scene, rig, day, daySeed()) : null;
+  const classrooms: Classrooms | null = isTown
+    ? buildClassrooms(scene, rig, day, npcs, daySeed())
+    : null;
   const gym: GymClass | null = isTown ? buildGymClass(props, day) : null;
 
   // Objectives from the scene.

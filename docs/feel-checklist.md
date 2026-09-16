@@ -88,6 +88,16 @@ knobs are in the table below.
 | 43  | Wrist displays legible at a glance, invisible otherwise                                                                    | [ ]  |                                            |
 | 44  | Frame floor inside the school moving at speed between classes (teachers and boards in view)                                | [ ]  | calls both eyes: __                        |
 
+## Phase 7: town life
+
+| #   | Item                                                                                                                   | Pass | Notes / measured on device                  |
+| --- | ---------------------------------------------------------------------------------------------------------------------- | ---- | ------------------------------------------- |
+| 45  | The town feels inhabited: pedestrians stroll the sidewalks in view without breaking the frame floor                    | [ ]  | `npcViewDistanceM`: __, calls both eyes: __ |
+| 46  | Sprinting past or bumping a pedestrian knocks it over with a whoop; it sits up dazed and dusts off; funny, never cruel | [ ]  | `npcReactRadius`, `npcReactSpeed`: __       |
+| 47  | Shopping reads without words: take, carry, release on the counter; cash chime vs. refusal buzz understood              | [ ]  |                                             |
+| 48  | Earn → spend → equip works end to end: a dye recolours your arms, an accessory shows on your neck                      | [ ]  |                                             |
+| 49  | A player who never punches anyone can complete everything                                                              | [ ]  |                                             |
+
 ## Knobs (`src/movementTuning.ts`)
 
 | Knob                  | Unit | Default | Turn it…                                                                     |

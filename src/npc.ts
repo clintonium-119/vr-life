@@ -22,6 +22,8 @@ export interface NpcSpec {
   /** Waypoints (feet positions) walked back and forth; walkers only. */
   route?: THREE.Vector3[];
   seed?: number;
+  /** Drawn only while the player is inside these bounds (indoor staff). */
+  visibleWithin?: THREE.Box3;
 }
 
 const SHOULDER_HEIGHT_M = 0.8;
@@ -229,7 +231,9 @@ export class NpcManager {
     let visible = 0;
     for (const npc of this.npcs) {
       npc.step(dt, t);
-      const near = npc.position.distanceTo(playerPos) <= t.npcViewDistanceM;
+      const near =
+        npc.position.distanceTo(playerPos) <= t.npcViewDistanceM &&
+        (npc.spec.visibleWithin === undefined || npc.spec.visibleWithin.containsPoint(playerPos));
       npc.parts.root.visible = near;
       if (near) {
         visible++;
