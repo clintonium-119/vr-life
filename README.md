@@ -52,3 +52,8 @@ once in Quest Browser and bookmark it.
 Append `?dev=1` (all dev flags) or `?dev=perf`, `?dev=tools` (individual)
 to the URL. Flags work in every build, including the GitHub Pages deploy,
 so the deployed artifact can be measured; they are off unless the URL asks.
+
+Movement feel knobs can be overridden at runtime with `?tune=k=v,k2=v2`
+(for example `?tune=handStiffness=40,speedCap=16`); the knob list, units
+and defaults live in `src/movementTuning.ts` and are documented in
+`docs/feel-checklist.md`. Applied overrides are logged once at startup.
