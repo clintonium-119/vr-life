@@ -37,6 +37,14 @@
       {
         "kind": "directory",
         "path": "~/src/github/clintonium-119/apo/packages/apo/docs"
+      },
+      {
+        "kind": "directory",
+        "path": "/tmp"
+      },
+      {
+        "kind": "file",
+        "path": ""
       }
     ]
   },
