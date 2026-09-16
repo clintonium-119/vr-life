@@ -1,7 +1,9 @@
 # VR Gorilla Game — Design Brief
 
-**Version:** 0.6
+**Version:** 0.7
 **Purpose:** Captures what the game *is* — concept, movement rules, characters, world, objectives. This is the source of design intent, not an implementation plan.
+
+**Changelog:** 0.7 (2026-09-16) — gorilla eye height and the body collider added to §4; play posture added to §1; frame floor tied to the session refresh rate; "Phase One" renamed "Version 1" to stop colliding with the roadmap's numbered phases; chunked-world rule added to §6.4; bus-as-moving-platform note added to §7.2; OQ-9 corrected for controller hardware; §9 now points at the roadmap for decisions.
 
 ---
 
@@ -29,7 +31,8 @@ Decided. Not open for re-litigation.
 | **Language** | TypeScript, strict |
 | **Build** | Vite |
 | **Hosting** | GitHub Pages (static only — see OQ-1) |
-| **Performance floor** | 72 fps sustained, both eyes, on Quest 3 standalone |
+| **Performance floor** | The WebXR session's refresh rate sustained, both eyes, on Quest 3 standalone. 72 Hz is the assumed rate; the real negotiated rate is what is measured against. |
+| **Play posture** | Standing, room-scale, with clearance to swing both arms. Turning is physical (see §4), so there is no seated mode and no artificial turn. |
 
 The performance floor is a design constraint, not just an engineering one. It rules out heavy materials, dense geometry, and large numbers of dynamic lights. Art direction must be built around it rather than fighting it.
 
@@ -69,6 +72,8 @@ That's the whole mechanic. Everything else is tuning.
 
 ### Rules
 
+- **The player's eye sits at gorilla height.** The virtual eye is placed lower above the virtual floor than the player's physical eye is above the real floor, so that a natural downward swing slaps the ground. This one offset is what makes ground-running possible; it is tuned for feel, and it means a human-scale town (§6.5) is seen from a low, wide-shouldered viewpoint.
+- **The body is one simple collider.** A single sphere or capsule hung from the head. It rests on the ground when standing, is pushed out of walls, and never tunnels geometry at speed. If the player physically leans their head into a wall, the body is nudged back; the camera is never moved independently of the head.
 - Gravity is always on. The player falls whenever no hand is holding a surface.
 - Both hands push independently. Using two at once is more powerful than one, but not double — two-handed pushes are scaled down so alternating single-hand strides stay competitive with double-armed leaping.
 - Momentum carries. Releasing a push at speed launches the player; there's no drag applied mid-air beyond gravity.
@@ -137,7 +142,7 @@ Practical shape of that, for the planning agent to work within:
 - Detail belongs in silhouette, colour, and texture — not polygon count.
 - The 72 fps floor is not negotiable for the sake of the art. A beautiful town at 60 fps is a failed town.
 
-### 6.3 Phase One locations
+### 6.3 Version 1 locations
 
 **Town core**
 - Residential streets with small single- and two-storey houses
@@ -154,7 +159,7 @@ Practical shape of that, for the planning agent to work within:
 - Police station
 - Fire department — engine bay, poles, tall doors
 - Hospital — the largest civic structure; wards, corridors, reception
-- **School** — required by the Phase One objectives (Section 7). Needs three classrooms, a gym, hallways, and a bus drop-off. This is the single most interior-heavy building in the game and the only one whose interior is definitely required for Phase One.
+- **School** — required by the Version 1 objectives (Section 7). Needs three classrooms, a gym, hallways, and a bus drop-off. This is the single most interior-heavy building in the game and the only one whose interior is definitely required for Version 1.
 - **Prison** — required by the conflict loop (7.6). Not part of the original location list. Needs an interior and, if escape is a mechanic, climbable structure designed around it. Later phase.
 
 **Transit**
@@ -176,10 +181,11 @@ Practical shape of that, for the planning agent to work within:
 - **Interiors must be traversable at speed.** Every interior is a confined space where a player carrying momentum will hit a wall. Interiors need high ceilings, wide doorways, open floor plans, and interior climbable structure. A realistically-proportioned office corridor would be miserable to move through.
 - **Landmarks readable at speed and from odd angles** — including from directly below and from mid-air. Players will be moving fast and looking in every direction.
 - **Collision geometry stays simple** even where visuals are detailed.
+- **Only what is near is drawn; everything is always solid.** One continuous town with ten interiors cannot be drawn whole at the frame floor. The world is built so that distant districts and closed interiors are not rendered, while the collision world stays loaded everywhere — movement must never depend on what is currently visible.
 
 ### 6.5 Open within the world
 
-- Which buildings have full interiors versus exterior-only shells. Full interiors for all ten locations is a very large amount of work and a heavy performance cost; a subset may be enough for Phase One.
+- Which buildings have full interiors versus exterior-only shells. Full interiors for all ten locations is a very large amount of work and a heavy performance cost; a subset may be enough for Version 1.
 - Whether the town is scaled to humans or to gorillas. Human-scale furniture and doorways are more readable and more comic; gorilla-scale is more comfortable to move through.
 - Time of day and weather. A fixed time of day is far cheaper and lets lighting be fully baked.
 
@@ -193,7 +199,7 @@ The game is a day in the life of a gorilla with a school to get to.
 
 It opens with an alarm clock. The player wakes up late, has to scramble out the door, and the day proceeds from there — bus, school, classes, and whatever the world offers afterwards. Objectives are structured as a sequence of things a kid has to do, played by a gorilla with no thumbsticks, which is the joke and the appeal.
 
-Phase One covers the morning rush through the end of the school day.
+Version 1 covers the morning rush through the end of the school day.
 
 ### 7.2 The morning rush
 
@@ -212,6 +218,7 @@ Design notes:
 - The timer must be tuned generously at first. A brand-new player who has never arm-swung before will be slow, and missing the bus on the very first attempt would be a bad first impression.
 - **Fail state is undecided** — see OQ-5.
 - The bus ride is the natural place to hide any loading between the town and the school.
+- The bus is a moving platform in a hand-anchored movement model: the player stands on it, grabs the rails, and is thrown about as it drives. Hands must stick to surfaces that move. If they cannot, the ride becomes a fade.
 
 ### 7.3 School
 
@@ -253,7 +260,7 @@ Wrist displays are the right call: readable on demand by a glance at your own ar
 
 The town is populated with NPCs, some walking the streets, some staffing stores. Money is spent with them on cosmetics and items.
 
-**Deliberately deferred.** Noted here so the world and economy are designed with it in mind, but not specified for Phase One.
+**Deliberately deferred.** Noted here so the world and economy are designed with it in mind, but not specified for Version 1.
 
 ### 7.6 Conflict and consequences
 
@@ -320,15 +327,17 @@ This is not an argument against the school. It is an argument that the school ha
 
 Ordered by how much they block other decisions.
 
+**Status:** OQ-1 and OQ-16 are settled and every other question has a working assumption in `ROADMAP.md` §3. This list is kept as the record of what was asked; the roadmap holds the answers.
+
 - **OQ-1 — Multiplayer or single-player?** The biggest structural decision in the project. It determines whether the world is designed around other players and how much of the character work matters. It also breaks the hosting model: GitHub Pages serves static files only, so multiplayer requires a second service for signalling and state sync. See also OQ-15.
-- **OQ-2 — Which locations get full interiors in Phase One?** The school and the player's house are now required. The other eight are open. Full interiors everywhere is a large scope and a heavy performance cost. See 6.5.
+- **OQ-2 — Which locations get full interiors in Version 1?** The school and the player's house are now required. The other eight are open. Full interiors everywhere is a large scope and a heavy performance cost. See 6.5.
 - **OQ-3 — Asset pipeline.** Textured environments, a good-looking gorilla, NPCs, and a school full of furniture all mean authored assets — model files, texture atlases, and a tool to produce them. This is now a certainty rather than an option, and it is the largest unscoped piece of work in the project. Who or what produces the art needs an answer.
 - **OQ-4 — Does carrying an object cost you a hand?** See Section 4, Grabbing and carrying. The most consequential gameplay question currently open.
 - **OQ-5 — Fail states.** What happens if the player misses the bus, or fails a class? Restart the day, walk to school the slow way, lose money, or no penalty at all? This decides whether the game has stakes or is a sandbox with tasks in it.
 - **OQ-6 — Question content.** Which three subjects? What grade level? How many questions per bank, and who writes them? Real educational questions and joke questions are very different games. A bank large enough to avoid repetition across replays is a substantial content job and should be scoped now rather than discovered later.
 - **OQ-7 — What does levelling unlock?** Cosmetics, new areas, new objectives, nothing? A number that rises with no consequence will be noticed quickly.
 - **OQ-8 — Is the day a repeatable loop?** Does the player wake up to a fresh school day, or is this a single linear run? This shapes save state, question-bank size, and the whole economy.
-- **OQ-9 — Is any button input used at all?** Raising a hand and touching an answer are purely positional, which is ideal. Grabbing is the one mechanic that probably wants a grip button — unless closing your hand near an object can serve instead.
+- **OQ-9 — Is any button input used at all?** Raising a hand and touching an answer are purely positional, which is ideal. Grabbing is the one mechanic that wants a grip button. Quest Touch Plus controllers cannot sense finger curl, so "closing your hand" is only available if hand tracking (OQ-12) is enabled; with controllers, the grip button is the hand closing.
 - **OQ-10 — World scale: human or gorilla?** See 6.5. Sharper now that classrooms, desks, and school furniture are involved.
 - **OQ-11 — Tone.** Nine mundane locations and one haunted cabin. Is the cabin a one-off spooky easter egg in an otherwise cheerful town, or the first hint of something darker under the whole setting?
 - **OQ-12 — Hand tracking as well as controllers?** Bare hands would suit a game about pushing and grabbing, but tracking loss at speed is a real risk.

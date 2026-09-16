@@ -1,7 +1,11 @@
 # VR Gorilla Game — Development Roadmap
 
-**Version:** 1.0
-**Companion document:** `DESIGN_BRIEF.md` (v0.6) — the source of design intent. This roadmap turns that intent into an ordered sequence of development phases. It deliberately does not define architecture, file structure, or APIs — that is the job of each phase's planning session.
+**Version:** 1.1
+**Companion document:** `DESIGN_BRIEF.md` (v0.7) — the source of design intent. This roadmap turns that intent into an ordered sequence of development phases. It deliberately does not define architecture, file structure, or APIs — that is the job of each phase's planning session.
+
+**Terminology:** the brief's "Phase One" means the first shippable version of the game (everything up to and including Phase 9 here). It is not one of the numbered development phases below.
+
+**Changelog:** 1.1 (2026-09-16) — dev tooling stays in the production build behind URL flags so the frame floor is measured on the shipped build; frame floor tied to the session's real refresh rate; player rig root and gorilla eye height added to Phases 0–1; controller-only grab corrected (OQ-9); physics-approach decision, body collider and moving-anchor tolerance added to Phase 1; world visibility strategy added to Phase 5; bus-as-moving-platform risk added to Phase 6; launch loop split into inner (dev server on device) and outer (Pages) loops.
 
 ---
 
@@ -52,7 +56,7 @@ Dependency note: Phases 0–3 are system phases (movement must exist before anyt
 | **OQ-6** Question content | Three subjects: **Math, Science, History**, at roughly grade 4–5 level. Each bank ~40 questions mixing light joke questions with genuinely real ones. Passing a class needs 3 correct. | A kid's school day is the joke; the mix keeps it funny without feeling like flashcards. |
 | **OQ-7** Levelling unlocks | Level gates cosmetics: new body colours and small accessory slots unlock at level thresholds. | Cheapest meaningful consequence; keeps the right wrist display from feeling decorative without inventing progression systems. |
 | **OQ-8** Repeatable loop | The day is repeatable. Progress (level, money, cosmetics, completed flags) persists via `localStorage` in the Quest Browser. Question banks shuffle per day. | Gives the economy and customisation purpose across sessions; `localStorage` is available in the Quest Browser and needs no server. |
-| **OQ-9** Buttons | No buttons for movement, ever. Grabbing uses proximity + a "close your hand" assist (fingers curl near the object); the grip button works as a fallback only. | Positional input matches the philosophy; the fallback exists because controller-only hands sometimes fumble. |
+| **OQ-9** Buttons | No buttons for movement, ever. Grabbing is proximity-assisted (a generous grab radius around the hand) and confirmed by holding the grip button. Quest Touch Plus controllers cannot sense finger curl — they only report button/trigger state and thumb/index capacitive touch — so a "close your hand" gesture is not available while OQ-12 stays controllers-only. | Positional input matches the philosophy as far as the hardware allows; the grip button is the only honest signal for "hand closed" on a controller. Revisit if hand tracking (OQ-12) is ever enabled. |
 | **OQ-10** World scale | Human scale. | The comedy and the readability of the brief lean on human-scale furniture and doorways; gorilla-scale interiors would flatten the gags. |
 | **OQ-11** Haunted cabin | A one-off spooky easter egg with a small hidden secret. Not the first thread of a darker setting. | Keeps the tonal fork closed for this version; the cabin can grow later without retroactively breaking the town's mood. |
 | **OQ-12** Hand tracking | Controllers only for this version. Hand tracking is deferred. | Tracking loss at speed would betray the movement model; reliability wins. |
@@ -69,13 +73,13 @@ Dependency note: Phases 0–3 are system phases (movement must exist before anyt
 
 These come from the brief and apply to every phase, not just the ones they originated in:
 
-1. **The 72 fps floor is measured, not promised.** The performance harness (Phase 0) runs in every phase. A district, interior, or effect that cannot sustain the floor is redesigned or cut — never "fixed later".
+1. **The 72 fps floor is measured, not promised.** The performance harness (Phase 0) runs in every phase, and it is measured on the deployed production build on the headset — not on the dev server and never on desktop. A district, interior, or effect that cannot sustain the floor is redesigned or cut — never "fixed later". The floor is the WebXR session's actual refresh rate (72 Hz is the brief's number; the harness reads the real rate from the session and warns against that — (verify) what Quest Browser negotiates on Quest 3, and whether a higher rate is offered).
 2. **Movement feel wins.** Any technical decision that trades away movement feel for convenience loses (brief §0). If a phase threatens the feel, the phase changes, not the feel.
 3. **Nothing between the player and the world.** No screen-space HUD, no floating UI, no menus if avoidable. All information lives in the world or on the player's body (wrist displays are the model).
 4. **Every surface that looks pushable is pushable.** Decorative geometry the player bounces off is a bug, filed as such, in any phase.
 5. **Art discipline:** atlas-based texturing, baked lighting, detail in silhouette/colour/texture rather than polygon count, simple collision geometry under detailed visuals.
 6. **Multiplayer tolerance:** no global singleton state; entities (player, NPCs, objects) are designed to be synchronisable even while the game is single-player.
-7. **No forbidden inputs.** No thumbstick, no teleport, no snap turn, no camera movement the player did not cause with hands, head, or gravity. Dev-only tools are flag-gated and never ship.
+7. **No forbidden inputs.** No thumbstick, no teleport, no snap turn, no camera movement the player did not cause with hands, head, or gravity. Dev-only tools (the performance harness, the teleport rig, visualisers) are gated behind URL flags that are off by default, and they *stay in the production build*: rail 1 requires measuring the shipped build on-device, so the harness must be reachable there. "Never ships" means "a player never sees it without opting in", not "compiled out".
 
 ---
 
@@ -90,21 +94,22 @@ These come from the brief and apply to every phase, not just the ones they origi
 **Deliverables:**
 
 - Vite + TypeScript (strict) + Three.js + WebXR (`immersive-vr`, 6DoF) scaffold.
-- GitHub Pages static deployment; a launch workflow that gets the game onto the headset quickly (QR / link sharing).
-- Device debugging loop using Meta's tooling (`npx metavr` CLI and/or Chrome remote debugging) — console, network, and frame inspection on-device.
-- **Performance harness:** on-device FPS and frame-time readout (dev flag), draw-call count, texture/scene memory estimate, and a warning state when below 72 fps sustained. This is the project's single most important tool.
-- **Test space:** an unadorned climbing volume — ground, walls, ledges, overhangs, a gap to launch across — built from debug materials. It exists to be moved in, not looked at.
-- **Placeholder player:** a simple body with always-visible hands and forearms following the controllers 1:1.
-- Dev-only tools (flag-gated, off in production): a fly/teleport rig for test placement, surface-normal and hand-ray visualisation, a velocity readout.
+- **Two device loops.** *Inner loop:* the local dev server opened on the headset over ADB port-reversal, with hot reload — an edit reaches the headset in seconds. *Outer loop:* GitHub Pages static deployment on push, launched on the headset with one terminal command that opens the URL in Quest Browser (a QR code is the fallback for anyone without ADB). The inner loop is for iteration; the outer loop is what the frame floor is measured on.
+- Device debugging loop using Meta's tooling (`npx metavr` CLI and Chrome remote debugging as complementary halves) — console, network, and frame inspection on-device.
+- **Performance harness:** on-device FPS and frame-time readout (URL flag), draw-call count, texture/scene memory estimate, and a warning state when the session's refresh rate is not sustained. Present in the production build behind its flag (rail 7). This is the project's single most important tool.
+- **Test space:** an unadorned climbing volume — ground, walls, ledges, overhangs, a gap to launch across — built from debug materials. It exists to be moved in, not looked at. Ledge and wall heights are sized against gorilla reach (see the eye-height item below), not human reach.
+- **Placeholder player as a rig:** one root object that owns the XR camera, both controller grips, and a simple body, so that moving the root moves the whole player. Hands and forearms are always visible and follow the controllers 1:1. The rig exposes a tunable **eye-height offset**: the player's virtual eye sits lower above the virtual floor than their physical eye does above the real floor, so that the hands reach the ground with a natural slap. The exact value is tuned in Phase 1; Phase 0 provides the knob and ships a first guess.
+- Dev-only tools (URL-flag-gated, off by default): a teleport rig for test placement and a hand-ray visualiser. A velocity readout belongs to Phase 1, where velocity exists.
 
 **Risks:** Quest Browser quirks (input timing, memory limits, shader features) discovered late. Mitigation is habit: the headset is the primary test surface from day one, never desktop.
 
 **Definition of Done:**
 
-- [ ] 72 fps sustained in the test space on Quest 3.
+- [ ] The frame floor is sustained in the test space on Quest 3, measured on the Pages production build with the harness flag on.
 - [ ] Hands and forearms visible, tracking 1:1, never obstructing the view.
-- [ ] Deploy → launch on headset → debug loop completes in under ~2 minutes.
-- [ ] Performance harness reports frame time, draw calls, and memory on-device.
+- [ ] Inner loop: an edit is visible on the headset in under ~10 seconds. Outer loop: push → live on Pages → open on headset → DevTools attached in under ~2 minutes.
+- [ ] Performance harness reports frame time, draw calls, memory, and the session refresh rate on-device.
+- [ ] The whole player (camera, hands, body) moves as one when the teleport rig moves the root.
 
 ---
 
@@ -116,7 +121,9 @@ These come from the brief and apply to every phase, not just the ones they origi
 
 **Deliverables:**
 
-- **Hand-surface stick:** short ray from each hand; on contact the hand anchors at the contact point (spring-damper hold); pulling the hand back moves the body; releasing at speed inherits the push as momentum.
+- **Physics approach — the phase's first decision.** The player is not a conventional rigid body: hands are kinematic anchors and the body is a single collider swept against static geometry. A general-purpose physics engine is likely the wrong tool for the player and the right tool for Phase 2's balls; decide deliberately, record it, and keep the two concerns separable.
+- **Body collider and scale:** the player's body is one simple collider (a sphere or capsule hung from the head) that never tunnels static geometry. Decide what happens when the physical head is pushed into a wall (the body is nudged out; the camera is never moved independently of the head). Tune the Phase 0 eye-height offset here so ground slaps, ledge grabs, and standing height all feel like a gorilla's body.
+- **Hand-surface stick:** hand colliders (small spheres) test contact against the world; on contact the hand anchors at the contact point (spring-damper hold); pulling the hand back moves the body; releasing at speed inherits the push as momentum. Anchors must tolerate a *moving* surface — Phase 6's bus is a platform the player stands on and pushes against while it drives.
 - **Body dynamics:** heavy gorilla mass — momentum builds over a few strides, never arriving instantly; gravity always on when no hand holds; momentum carries in the air with no artificial drag; a high speed cap that feels like an achievement to reach.
 - **Push scaling:** two-handed pushes are scaled down so that alternating single-hand strides stay competitive with double-armed leaping (brief §4).
 - **Core verbs:** ground-slap running (alternating slaps = stride), climbing (haul up ledges and faces), wall launching, and **wall slide** — hitting a wall at speed slides along it: not a dead stop, not a pass-through. Continuous collision handling so the player never tunnels a wall at speed.
@@ -225,11 +232,14 @@ These come from the brief and apply to every phase, not just the ones they origi
 - **Landmarks readable at speed** and from odd angles, including directly below and mid-air.
 - **Interior rules** (6.4) everywhere: high ceilings, wide doorways, open floor plans, interior climbable structure, interiors traversable at speed.
 - Simple collision geometry under all detailed visuals; every significant surface pushable.
+- **World visibility strategy.** One continuous space of ten locations with interiors cannot be drawn whole at the frame floor. The world is authored in chunks with static geometry merged per chunk, chunks are culled by distance and frustum, interiors are hidden unless the player is inside or at the door, and the collision world stays loaded regardless so movement never depends on what is drawn. The Phase 4 district budget is a per-*visible-set* budget, not a per-town budget.
+
+**Risks:** the visibility strategy is the difference between a town that runs and a town that does not. Prove it on two districts plus one interior before building the other eight locations.
 
 **Definition of Done:**
 
 - [ ] Farm → forest → town centre → farm, one continuous space, no transitions.
-- [ ] 72 fps measured in every district and every full interior, including at speed with momentum.
+- [ ] 72 fps measured in every district and every full interior, including at speed with momentum, and from the rooftop peaks where most of the town is visible at once.
 - [ ] The rooftop route is usable end-to-end and fun.
 - [ ] No interior feels like a confined misery at speed.
 - [ ] A playtester finds the cabin without being told where it is (or its hiding place is documented and defensible).
@@ -251,6 +261,8 @@ These come from the brief and apply to every phase, not just the ones they origi
 - **Wrist displays** (7.4): left wrist = money, right wrist = level. Diegetic, glanceable on demand, invisible otherwise. No other UI exists.
 - **Soft fail states** (OQ-5): miss the bus → walk the slow way or take a late bus; fail a class → the teacher lets you try again. No progress wipes.
 - **Comedy discipline** (7.7): classrooms are not sealed — a gorilla who wants to climb the bookshelves is let; hallways, stairwells, lockers, and between-class rushes give movement *to* class; the inherent comedy of a gorilla in a classroom is leaned into, not played straight.
+
+**Risks:** the bus is a moving platform in a hand-anchored movement model — the player stands on it, grabs the rails, and gets thrown about while it drives. If Phase 1's anchors do not tolerate moving surfaces, the bus becomes the fade the brief wanted to avoid (OQ-14). Prototype the ride on a moving box early in this phase. The question banks are a content job of roughly 120 authored questions (OQ-6) and should be written in parallel with the code, not after it.
 
 **Definition of Done:**
 
