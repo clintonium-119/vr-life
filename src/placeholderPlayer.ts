@@ -7,11 +7,22 @@ import * as THREE from 'three';
 // physics here (Phase 1 / Phase 3 own those).
 
 export interface PlayerRig {
-  /** Body root, static at spawn; the teleport rig (dev tools) moves this. */
+  /** The one movable root: owns the camera, both grips, and the body. Move
+   * this to move the whole player (teleport, later locomotion). */
+  root: THREE.Group;
+  /** Body stub, child of root. */
   group: THREE.Group;
   handLeft: THREE.Group;
   handRight: THREE.Group;
 }
+
+/**
+ * How far below physical standing height the virtual eye sits, in metres.
+ * A knuckle-walker slaps the ground with a relaxed arm swing, so the virtual
+ * floor has to be within reach of hands hanging at physical hip height.
+ * First guess; tuning for feel is Phase 1.
+ */
+export const EYE_HEIGHT_OFFSET_M = 0.5;
 
 const SKIN_COLOR = 0x2b2620;
 const MATT_COLOR = 0x3a332a;
@@ -65,10 +76,21 @@ function buildBody(): THREE.Group {
   return body;
 }
 
-export function buildPlayer(scene: THREE.Scene, renderer: THREE.WebGLRenderer): PlayerRig {
+export function buildPlayer(
+  scene: THREE.Scene,
+  renderer: THREE.WebGLRenderer,
+  camera: THREE.Camera,
+): PlayerRig {
+  // Rig root ("dolly"): the XR manager composes the headset/controller poses
+  // under the camera's parent, so one transform here moves everything.
+  const root = new THREE.Group();
+  root.name = 'playerRoot';
+  root.position.y = -EYE_HEIGHT_OFFSET_M;
+  root.add(camera);
+  scene.add(root);
+
   const group = buildBody();
-  group.name = 'player';
-  scene.add(group);
+  root.add(group);
 
   const handLeft = buildHand('handLeft');
   const handRight = buildHand('handRight');
@@ -100,8 +122,8 @@ export function buildPlayer(scene: THREE.Scene, renderer: THREE.WebGLRenderer): 
       hand.removeFromParent();
       grip.add(hand);
     });
-    scene.add(grip);
+    root.add(grip);
   }
 
-  return { group, handLeft, handRight };
+  return { root, group, handLeft, handRight };
 }

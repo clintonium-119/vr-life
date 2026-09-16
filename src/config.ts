@@ -29,6 +29,4 @@ export function parseDevFlags(query: string): DevFlags {
   return flags;
 }
 
-export const devFlags: Readonly<DevFlags> = Object.freeze(
-  parseDevFlags(window.location.search),
-);
+export const devFlags: Readonly<DevFlags> = Object.freeze(parseDevFlags(window.location.search));

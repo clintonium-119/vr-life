@@ -59,7 +59,10 @@ export class PerfSampler {
   constructor(options: PerfSamplerOptions = {}) {
     this.windowSize = Math.max(1, Math.floor(options.windowSize ?? DEFAULT_WINDOW_SIZE));
     this.floorFps = options.floorFps ?? DEFAULT_FLOOR_FPS;
-    this.sustainWindows = Math.max(1, Math.floor(options.sustainWindows ?? DEFAULT_SUSTAIN_WINDOWS));
+    this.sustainWindows = Math.max(
+      1,
+      Math.floor(options.sustainWindows ?? DEFAULT_SUSTAIN_WINDOWS),
+    );
     this.clearWindows = Math.max(1, Math.floor(options.clearWindows ?? DEFAULT_CLEAR_WINDOWS));
     this.ring = new Float32Array(this.windowSize);
     this.sortScratch = new Float32Array(this.windowSize);

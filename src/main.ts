@@ -4,6 +4,7 @@ import { buildTestSpace } from './testSpace';
 import { buildPlayer } from './placeholderPlayer';
 import { PerfSampler } from './perfStats';
 import { buildPerfHud, type PerfHud } from './perfHud';
+import { buildDevTools, type DevTools } from './devTools';
 
 const container = document.getElementById('app') as HTMLDivElement;
 const overlay = document.getElementById('entry-overlay') as HTMLDivElement;
@@ -21,22 +22,25 @@ scene.background = new THREE.Color(0x101418);
 
 // One camera for both desktop and XR. In XR the headset pose drives this
 // camera, so it is positioned only for the pre-session desktop view.
-const camera = new THREE.PerspectiveCamera(
-  70,
-  window.innerWidth / window.innerHeight,
-  0.05,
-  100,
-);
+const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.05, 100);
 camera.position.set(0, 1.6, 2);
 
 // Debug climbing volume (ground, walls, ledges, overhangs, launch gap);
 // lighting lives inside the group.
-scene.add(buildTestSpace(scene));
+const testSpace = buildTestSpace(scene);
+scene.add(testSpace);
 
-// Placeholder player. Hands are parented to the XR grip-space objects, which
-// the WebXRManager updates from the input-source pose every frame — that is
-// the whole "driving": 1:1 passthrough, no per-frame pose code here.
-buildPlayer(scene, renderer); // body group is the teleport-rig target from a later dev-tools step
+// Placeholder player rig: one root owning the camera, both grips, and the
+// body. Hands are parented to the XR grip-space objects, which the
+// WebXRManager updates from the input-source pose every frame — that is the
+// whole "driving": 1:1 passthrough, no per-frame pose code here.
+const player = buildPlayer(scene, renderer, camera);
+
+// Dev tools (dev flag `tools`): teleport + hand rays. Never constructed
+// without the flag.
+const devTools: DevTools | null = devFlags.tools
+  ? buildDevTools(renderer, camera, player, testSpace)
+  : null;
 
 // Perf harness (dev flag `perf`): the sampler samples before the frame's
 // work, the HUD updates after render so renderer.info is fresh. Present in
@@ -45,10 +49,8 @@ let perfSampler: PerfSampler | null = null;
 let perfHud: PerfHud | null = null;
 function startPerfHarness(sessionRateHz: number | undefined): void {
   perfHud?.dispose();
-  // The camera must be in the scene graph for the camera-attached HUD quad
-  // to reach the render list (the renderer traverses the scene, not the
-  // camera).
-  scene.add(camera);
+  // The camera-attached HUD quad reaches the render list because the camera
+  // is in the scene graph via the player rig.
   perfSampler =
     sessionRateHz === undefined ? new PerfSampler() : new PerfSampler({ floorFps: sessionRateHz });
   perfHud = buildPerfHud(scene, camera, perfSampler, sessionRateHz);
@@ -57,6 +59,7 @@ if (devFlags.perf) startPerfHarness(undefined);
 
 renderer.setAnimationLoop((time: number) => {
   if (perfSampler !== null) perfSampler.sample(time);
+  if (devTools !== null) devTools.update();
   renderer.render(scene, camera);
   if (perfHud !== null) perfHud.update(time, renderer);
 });
