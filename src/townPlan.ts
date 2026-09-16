@@ -41,6 +41,8 @@ export const PLACES = {
   school: [140, 0, -19],
   schoolDropOff: [140, 0.12, -20],
   gym: [176, 0, -34],
+  prison: [57, 0, -118],
+  prisonCell: [50, 0, -140],
   farm: [-110, 0, -8],
   forest: [0, 0, 45],
   cabin: [40, 0, 95],

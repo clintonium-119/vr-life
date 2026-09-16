@@ -221,6 +221,16 @@ export class CollisionWorld {
     }
   }
 
+  /** Drop a mover (opening bars, gates). */
+  removeDynamic(...colliders: BoxCollider[]): void {
+    for (const c of colliders) {
+      const d = this.dynamic.indexOf(c);
+      if (d >= 0) this.dynamic.splice(d, 1);
+      const a = this.colliders.indexOf(c);
+      if (a >= 0) this.colliders.splice(a, 1);
+    }
+  }
+
   private visit(center: Vector3, radius: number, cb: (c: BoxCollider) => void): void {
     this.grid.forEachNear(center, radius, cb);
     for (const c of this.dynamic) cb(c);

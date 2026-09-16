@@ -106,6 +106,33 @@ export const tuning = {
   priceDye: 40,
   priceAccessory: 60,
 
+  // ---- conflict & pursuit ----
+  /** A hand faster than this within strikeRadius of an NPC is a strike, m/s and m. */
+  strikeSpeed: 3,
+  strikeRadius: 0.45,
+  /** Heat per strike / toy-gun pop (0..1 scale), decay per second, dispatch threshold. */
+  heatPerStrike: 0.25,
+  heatPerPop: 0.4,
+  heatDecayPerS: 0.03,
+  heatDispatch: 0.5,
+  /** Officers at once; their chase speed (below the player's cap), m/s. */
+  maxOfficers: 3,
+  policeSpeed: 6,
+  /** Within this for this long is an arrest, m and s. */
+  arrestRadius: 1.2,
+  arrestHoldS: 0.5,
+  /** Escort drag speed to the prison, m/s. */
+  escortSpeed: 3,
+  /** Toy gun range and cone, m and degrees; price. */
+  gunRange: 25,
+  gunConeDeg: 12,
+  priceGun: 80,
+  /** Soft release: bars and gate open after this long inside, s. */
+  prisonReleaseS: 120,
+  /** Arrest fine: fraction of money, with a floor. */
+  fineFraction: 0.5,
+  fineMin: 20,
+
   // ---- character pose ----
   /** Torso lean into horizontal motion, degrees per m/s. */
   leanPerMps: 3,
