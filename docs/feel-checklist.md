@@ -109,6 +109,16 @@ knobs are in the table below.
 | 54  | Tone 100% slapstick: strikes, pops, falls and sirens read as chaos, never violence                             | [ ]  |                                                   |
 | 55  | Frame floor during a pursuit with three officers and sirens                                                    | [ ]  | calls both eyes: __                               |
 
+## Phase 9: polish
+
+| #   | Item                                                                                                          | Pass | Notes / measured on device      |
+| --- | ------------------------------------------------------------------------------------------------------------- | ---- | ------------------------------- |
+| 56  | The first 30 s (shuffle around) and the first 5 minutes (catch the bus) are as tight as the rest              | [ ]  |                                 |
+| 57  | Sleep in the bed after a done day: the next day starts with the alarm; money, level and look survive a reload | [ ]  |                                 |
+| 58  | Audio bed balance: ambience under the movement sounds, pad barely there, bus engine aboard                    | [ ]  | `ambienceGain`, `musicGain`: __ |
+| 59  | Fixed afternoon light and fog read well; distant chunks fade, never pop                                       | [ ]  |                                 |
+| 60  | A stranger completes a full day unassisted at the frame floor; zero known floor violations anywhere           | [ ]  |                                 |
+
 ## Knobs (`src/movementTuning.ts`)
 
 | Knob                  | Unit | Default | Turn it…                                                                     |

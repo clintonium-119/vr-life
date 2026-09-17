@@ -131,7 +131,11 @@ npm run smoke:town         # bedroom, office roof, hospital roof, school, farm, 
 npm run smoke:day          # bedroom; requires the "day: rush" and "door crossed" logs
 npm run smoke:shop         # grocery spawn with a finished day (money to spend)
 npm run smoke:chase        # bus stop with heat=1; requires "officers dispatched"
+npm run smoke:fresh        # reset=1; requires "save: fresh profile"
+npm run smoke:qa           # every smoke in sequence (about two minutes)
 ```
+
+The final headset session follows `docs/release-checklist.md`.
 
 `scripts/smoke.mjs` opens the URL in headless Chromium over the DevTools
 protocol, streams the console for nine real seconds (virtual-time budgets do

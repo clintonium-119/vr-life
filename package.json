@@ -18,7 +18,9 @@
     "smoke:town": "for p in bedroom officeRoof hospitalRoof school farm forest; do node scripts/smoke.mjs \"http://localhost:4173/vr-life/?dev=perf,tools&drive=auto&spawn=$p\" 7 --max-calls 400 || exit 1; done",
     "smoke:day": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto' 10 --require 'day: rush' --require 'door crossed'",
     "smoke:shop": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto&spawn=grocery&day=done' 7 --max-calls 400",
-    "smoke:chase": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto&spawn=busStop&heat=1' 12 --require 'officers dispatched'"
+    "smoke:chase": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto&spawn=busStop&heat=1' 12 --require 'officers dispatched'",
+    "smoke:fresh": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto&reset=1' 9 --require 'save: fresh profile' --require 'door crossed'",
+    "smoke:qa": "npm run smoke:fresh && npm run smoke:home && npm run smoke:day && npm run smoke:shop && npm run smoke:chase && npm run smoke:town && npm run smoke"
   },
   "dependencies": {
     "three": "^0.186.0"

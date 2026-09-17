@@ -60,6 +60,13 @@ the gym, put a basketball through the hoop or a soccer ball in the goal
 three times. Nothing fails the day: wrong answers just bring another
 question.
 
+### Days and saving
+
+Money, level, look and the day count are saved in the browser
+(localStorage) on every change. When the day is done, put a hand on your
+bed to sleep: tomorrow starts with the alarm, classes pay again, and what
+you own stays. `reset=1` in the URL starts a fresh profile.
+
 ### Town life
 
 Pedestrian gorillas stroll the sidewalks; sprint past or bump into one

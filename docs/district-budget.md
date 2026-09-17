@@ -53,6 +53,25 @@ line `[vr-life] world home: …` for parts, vertices, colliders and catwalks.
 
 `npm run smoke:town` re-measures these and fails above 400 calls.
 
+## Finished town: host measurements (2026-09-16, headless single view, `smoke:town`)
+
+23 chunks (12 districts/skyways + 11 interiors), ~2700 parts, ~400k vertices,
+~2600 colliders, 15 catwalks, 29 props, 19 NPCs (14 pedestrians, 2
+shopkeepers, 3 teachers) plus up to 3 officers.
+
+| Spawn              | Draw calls (single view) | NPCs visible |
+| ------------------ | ------------------------ | ------------ |
+| bedroom            | 26                       | 2            |
+| officeRoof         | 34                       | 6            |
+| hospitalRoof       | 6                        | 1            |
+| school             | 15                       | 1            |
+| farm               | 36                       | 2            |
+| forest             | 44                       | 0            |
+| grocery (day done) | 55                       | 3            |
+
+Both eyes on device is roughly double, before frustum differences; the
+budget is 150.
+
 ## Device measurements (final headset session)
 
 | Quantity                                             | Measured | Notes                               |
