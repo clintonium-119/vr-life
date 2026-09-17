@@ -109,24 +109,36 @@ export function addBuilding(exterior: Chunk, interior: Chunk, spec: BuildingSpec
       const dz = info.axis === 'z' ? info.start[1] + at + dw / 2 : info.start[1];
       doorCentres.push([dx, B + dh / 2, dz]);
     }
-    // Window strips: one decal per storey per side (cheap, reads as glazing).
+    // Window strips: one decal per storey per side (cheap, reads as glazing);
+    // the ground-floor strip is split around the door opening.
     if (spec.windows !== false) {
       for (let s = 0; s < spec.storeys; s++) {
         const y = B + s * SH + 1.9;
-        const len = info.length - 1.2;
-        const [mx, mz] =
-          info.axis === 'x'
-            ? [info.start[0] + info.length / 2, info.start[1] + info.out[1] * (WALL_T / 2 + 0.03)]
-            : [info.start[0] + info.out[0] * (WALL_T / 2 + 0.03), info.start[1] + info.length / 2];
-        exterior.add({
-          name: `${name}:glazing`,
-          size: info.axis === 'x' ? [len, 1.4, 0.05] : [0.05, 1.4, len],
-          position: [mx, y, mz],
-          tiles: { sides: 'window' },
-          uvScale: 1.4,
-          surface: 'metal',
-          noCollide: true,
-        });
+        const spans: [number, number][] =
+          s === 0 && door
+            ? [
+                [0.6, at - 0.2],
+                [at + dw + 0.2, info.length - 0.6],
+              ]
+            : [[0.6, info.length - 0.6]];
+        for (const [a, b] of spans) {
+          const len = b - a;
+          if (len < 0.8) continue;
+          const mid = a + len / 2;
+          const [mx, mz] =
+            info.axis === 'x'
+              ? [info.start[0] + mid, info.start[1] + info.out[1] * (WALL_T / 2 + 0.03)]
+              : [info.start[0] + info.out[0] * (WALL_T / 2 + 0.03), info.start[1] + mid];
+          exterior.add({
+            name: `${name}:glazing`,
+            size: info.axis === 'x' ? [len, 1.4, 0.05] : [0.05, 1.4, len],
+            position: [mx, y, mz],
+            tiles: { sides: 'window' },
+            uvScale: 1.4,
+            surface: 'metal',
+            noCollide: true,
+          });
+        }
       }
     }
   }

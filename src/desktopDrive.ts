@@ -101,6 +101,13 @@ export function buildDesktopDrive(
   ];
 
   camera.rotation.order = 'YXZ';
+  // Dev: `?cam=<yawDeg>,<pitchDeg>` sets the starting look (screenshots).
+  const cam = new URLSearchParams(globalThis.location?.search ?? '').get('cam');
+  if (cam !== null) {
+    const [yaw, pitch] = cam.split(',').map(Number);
+    if (Number.isFinite(yaw)) camera.rotation.y = THREE.MathUtils.degToRad(yaw);
+    if (Number.isFinite(pitch)) camera.rotation.x = THREE.MathUtils.degToRad(pitch);
+  }
   const canvas = renderer.domElement;
   canvas.addEventListener('click', () => {
     if (active && document.pointerLockElement !== canvas) void canvas.requestPointerLock();
