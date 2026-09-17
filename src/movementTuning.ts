@@ -12,7 +12,7 @@ export const tuning = {
   /** The virtual floor sits this far above the physical floor, m: the eye
    * and hands ride lower over the world so a relaxed arm swing slaps the
    * ground. The one knob that makes ground-running possible. */
-  eyeHeightOffset: 0.5,
+  eyeHeightOffset: 0.7,
   /** Hand contact sphere radius, m. */
   handRadius: 0.07,
   /** Spring rate of the hand hold, 1/s: the rig closes this fraction of the

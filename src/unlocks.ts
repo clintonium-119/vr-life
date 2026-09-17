@@ -8,12 +8,12 @@ export interface UnlockTier {
 }
 
 export const UNLOCKS: readonly UnlockTier[] = [
-  { level: 0, colors: [0, 1], slots: [] },
-  { level: 1, colors: [0, 1, 2], slots: [] },
-  { level: 2, colors: [0, 1, 2, 3], slots: [0] },
-  { level: 3, colors: [0, 1, 2, 3, 4], slots: [0] },
-  { level: 4, colors: [0, 1, 2, 3, 4, 5], slots: [0, 1] },
-  { level: 5, colors: [0, 1, 2, 3, 4, 5], slots: [0, 1] },
+  { level: 0, colors: [0, 1, 2], slots: [] },
+  { level: 1, colors: [0, 1, 2, 3, 4], slots: [] },
+  { level: 2, colors: [0, 1, 2, 3, 4, 5, 6], slots: [0] },
+  { level: 3, colors: [0, 1, 2, 3, 4, 5, 6, 7, 8], slots: [0] },
+  { level: 4, colors: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], slots: [0, 1] },
+  { level: 5, colors: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], slots: [0, 1] },
 ];
 
 function tierFor(level: number): UnlockTier {

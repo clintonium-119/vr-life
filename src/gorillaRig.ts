@@ -69,9 +69,6 @@ export function applyGorillaPose(
   parts.torso.quaternion.copy(_lean).multiply(_pitch);
   parts.torso.position.y = -pose.sag * SAG_DROP_M + pose.hipBob;
 
-  parts.leg[0].rotation.x = pose.legSwing[0];
-  parts.leg[1].rotation.x = pose.legSwing[1];
-
   parts.root.updateWorldMatrix(true, true);
   for (let i = 0; i < 2; i++) {
     const side = i === 0 ? -1 : 1;

@@ -11,13 +11,13 @@ describe('unlocks', () => {
       for (const c of UNLOCKS[i - 1].colors) expect(UNLOCKS[i].colors).toContain(c);
       for (const s of UNLOCKS[i - 1].slots) expect(UNLOCKS[i].slots).toContain(s);
     }
-    expect(unlockedColors(0)).toEqual([0, 1]);
+    expect(unlockedColors(0)).toEqual([0, 1, 2]);
     expect(unlockedSlots(0)).toEqual([]);
     expect(isSlotUnlocked(2, 0)).toBe(true);
     expect(isSlotUnlocked(2, 1)).toBe(false);
     expect(isSlotUnlocked(4, 1)).toBe(true);
-    expect(isColorUnlocked(3, 5)).toBe(false);
-    expect(isColorUnlocked(9, 5)).toBe(true);
+    expect(isColorUnlocked(3, 11)).toBe(false);
+    expect(isColorUnlocked(9, 11)).toBe(true);
   });
 
   it('applies an appearance to the player at runtime', () => {

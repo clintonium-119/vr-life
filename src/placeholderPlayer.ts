@@ -72,7 +72,11 @@ export function buildPlayer(
             : unassigned++ === 0
               ? handRight // index-0 convention when handedness is missing
               : handLeft;
+      // The desktop drive may have positioned the hand under the rig root;
+      // on a grip it must sit exactly at the grip origin, 1:1 with the controller.
       hand.removeFromParent();
+      hand.position.set(0, 0, 0);
+      hand.quaternion.identity();
       grip.add(hand);
     });
     root.add(grip);

@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { PALETTE, buildAccessory, type Appearance } from './appearance';
 
 // The gorilla, built from parametric primitives: barrel chest, heavy sloped
-// shoulders, long thick forearms, small hips, short legs, brow ridge and
+// shoulders, long thick forearms, a small rounded lower body and no legs
+// (head, torso and arms, the way the reference game does it), brow ridge and
 // sagittal crest, knuckle-walking posture. Silhouette first: nothing here
 // that does not change the outline. Two materials per gorilla (fur, skin).
 // Arms are pivot chains (shoulder → elbow → wrist) that the pose module
@@ -22,8 +23,6 @@ export const GORILLA_PROPORTIONS = {
   handMitt: 0.065,
   hipsRadius: 0.17,
   hipsBelowChest: 0.42,
-  legRadius: 0.075,
-  legLength: 0.3,
   headRadius: 0.14,
   headAboveChest: 0.24,
   headForward: 0.12,
@@ -49,7 +48,6 @@ export interface GorillaParts {
   forearm: [THREE.Mesh, THREE.Mesh];
   /** Palm-origin hand groups (mitt, knuckles, thumb). */
   hand: [THREE.Group, THREE.Group];
-  leg: [THREE.Group, THREE.Group];
   furMaterial: THREE.MeshLambertMaterial;
   skinMaterial: THREE.MeshLambertMaterial;
 }
@@ -165,7 +163,6 @@ export function buildGorilla(appearance: Appearance, options: GorillaOptions = {
   const elbow: THREE.Object3D[] = [];
   const forearm: THREE.Mesh[] = [];
   const hand: THREE.Group[] = [];
-  const leg: THREE.Group[] = [];
   for (const [i, side] of [-1, 1].entries()) {
     const label = side < 0 ? 'Left' : 'Right';
     const pivot = new THREE.Object3D();
@@ -202,29 +199,10 @@ export function buildGorilla(appearance: Appearance, options: GorillaOptions = {
 
     hand.push(buildHand(`hand${label}`, side, skinMaterial));
 
-    const legGroup = new THREE.Group();
-    legGroup.name = `leg${label}`;
-    legGroup.position.set(side * P.hipsRadius * 0.7, -P.hipsBelowChest - 0.05, 0.06);
-    torso.add(legGroup);
-    const thigh = new THREE.Mesh(
-      new THREE.CapsuleGeometry(P.legRadius, P.legLength - P.legRadius, 4, 8),
-      furMaterial,
-    );
-    thigh.name = `thigh${label}`;
-    thigh.position.y = -P.legLength / 2;
-    thigh.rotation.x = 0.35; // tucked forward, knuckle-walk crouch
-    legGroup.add(thigh);
-    const foot = new THREE.Mesh(new THREE.SphereGeometry(P.legRadius * 1.1, 8, 6), skinMaterial);
-    foot.name = `foot${label}`;
-    foot.scale.set(1, 0.6, 1.5);
-    foot.position.set(0, -P.legLength, 0.12);
-    legGroup.add(foot);
-
     shoulder.push(pivot);
     upperArm.push(upper);
     elbow.push(elbowPivot);
     forearm.push(lower);
-    leg.push(legGroup);
     void i;
   }
 
@@ -242,7 +220,6 @@ export function buildGorilla(appearance: Appearance, options: GorillaOptions = {
     elbow: [elbow[0], elbow[1]],
     forearm: [forearm[0], forearm[1]],
     hand: [hand[0], hand[1]],
-    leg: [leg[0], leg[1]],
     furMaterial,
     skinMaterial,
   };

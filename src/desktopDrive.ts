@@ -78,7 +78,13 @@ export function buildDesktopDrive(
 
   // The hands only attach to the grips when a controller connects; on the
   // desktop they hang off the rig root and this module positions them.
-  rig.root.add(rig.handLeft, rig.handRight);
+  if (active) rig.root.add(rig.handLeft, rig.handRight);
+  // Once a session starts the grips own the hands; never touch them again.
+  renderer.xr.addEventListener('sessionstart', () => {
+    for (const hand of [rig.handLeft, rig.handRight]) {
+      if (hand.parent === rig.root) hand.removeFromParent();
+    }
+  });
   const hands: Hand[] = [
     {
       group: rig.handLeft,
