@@ -61,6 +61,17 @@ the gym, put a basketball through the hoop or a soccer ball in the goal
 three times. Nothing fails the day: wrong answers just bring another
 question.
 
+### Sound and textures
+
+Music is Kevin MacLeod (incompetech.com, CC BY 4.0): the town, the school
+and the chase each have a track, crossfaded by what you are doing. Sound
+effects are CC0 (Kenney's impact sounds, the OpenGameArt RPG pack, a forest
+ambience loop). Surface textures are 1K CC0 colour maps from ambientCG,
+painted into the shared atlas at startup over the procedural fallback; the
+gorillas wear desaturated fur and skin maps tinted by their colour. Every
+source is listed in `CREDITS.md`. Volume knobs: `musicGain`, `sfxGain`,
+`ambienceGain`.
+
 ### Days and saving
 
 Money, level, look and the day count are saved in the browser

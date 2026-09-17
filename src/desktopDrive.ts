@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { Grab } from './grab';
+import { tuning } from './movementTuning';
 import type { Locomotion } from './locomotion';
 import type { PlayerRig } from './placeholderPlayer';
 import type { PropWorld } from './props';
@@ -17,7 +18,6 @@ import type { PropWorld } from './props';
 // ~1.6 m above the physical floor on the desktop camera).
 const REST_LOCAL = new THREE.Vector3(0.25, -0.6, -0.3);
 const REACH_FORWARD_M = 0.3;
-const REACH_DOWN_M = 0.6; // from hip to below the virtual floor (eye offset 0.5)
 const LIFT_M = 0.15;
 const PHASE_REACH_S = 0.12;
 const REACH_GRACE_S = 0.05; // one more beat for the anchor to register
@@ -25,9 +25,9 @@ const PHASE_DRAG_S = 0.25;
 const PHASE_LIFT_S = 0.08;
 const LOOK_SENSITIVITY = 0.002;
 const AUTO_STRIDE_PERIOD_S = 0.5;
-const AUTO_DURATION_S = 5;
-const AUTO_GRAB_AT_S = 6;
-const AUTO_THROW_AT_S = 6.6;
+const AUTO_DURATION_S = 6.5;
+const AUTO_GRAB_AT_S = 7.5;
+const AUTO_THROW_AT_S = 8.1;
 const REACH_GRAB_M = 0.45;
 const LOG_PERIOD_S = 1;
 
@@ -202,15 +202,17 @@ export function buildDesktopDrive(
         const index = hand.side < 0 ? 0 : 1;
         if (locomotion.handAnchored(index)) {
           // Ground under the hand → stride back; a face in front → haul down.
-          const hitWall = pos.y > _rest.y - REACH_DOWN_M * 0.5;
+          // A contact well above the virtual floor is a wall: haul down instead of back.
+          const hitWall = pos.y > tuning.eyeHeightOffset + 0.4;
           hand.dragDir.copy(hitWall ? new THREE.Vector3(0, -1, 0) : _forward.clone().negate());
           hand.phase = 'drag';
           hand.elapsed = 0;
           return;
         }
-        _step.copy(_forward).multiplyScalar(REACH_FORWARD_M);
-        _step.y -= REACH_DOWN_M;
-        _step.add(_rest); // reach target
+        // Reach target: ahead of the rest pose, with the hand centre just
+        // below the virtual floor so contact happens without a deep plunge.
+        _step.copy(_forward).multiplyScalar(REACH_FORWARD_M).add(_rest);
+        _step.y = tuning.eyeHeightOffset + tuning.handRadius - 0.02;
         const k = Math.min(1, dt / Math.max(1e-3, PHASE_REACH_S - (hand.elapsed - dt)));
         pos.lerp(_step, k);
         if (hand.elapsed >= PHASE_REACH_S + REACH_GRACE_S) {

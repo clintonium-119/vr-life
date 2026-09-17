@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { PALETTE, buildAccessory, type Appearance } from './appearance';
+import { loadSurfaceTexture } from './atlas';
 
 // The gorilla, built from parametric primitives: barrel chest, heavy sloped
 // shoulders, long thick forearms, a small rounded lower body and no legs
@@ -57,8 +58,19 @@ export interface GorillaOptions {
   firstPerson?: boolean;
 }
 
-const SKIN_COLOR = 0x2b2620;
+const SKIN_COLOR = 0x3a302a;
 const P = GORILLA_PROPORTIONS;
+
+// One fur map and one skin map shared by every gorilla; the material colour
+// tints them. Loaded lazily so unit tests never touch the loader.
+let furMap: THREE.Texture | null = null;
+let skinMap: THREE.Texture | null = null;
+function maps(): { fur: THREE.Texture | null; skin: THREE.Texture | null } {
+  if (typeof document === 'undefined') return { fur: null, skin: null };
+  furMap ??= loadSurfaceTexture('fur', 2);
+  skinMap ??= loadSurfaceTexture('skin', 2);
+  return { fur: furMap, skin: skinMap };
+}
 
 function buildHand(name: string, side: number, skin: THREE.Material): THREE.Group {
   const hand = new THREE.Group();
@@ -112,10 +124,12 @@ function buildHead(fur: THREE.Material, skin: THREE.Material): THREE.Group {
 }
 
 export function buildGorilla(appearance: Appearance, options: GorillaOptions = {}): GorillaParts {
+  const { fur, skin } = maps();
   const furMaterial = new THREE.MeshLambertMaterial({
     color: PALETTE[appearance.bodyColor] ?? PALETTE[0],
+    map: fur,
   });
-  const skinMaterial = new THREE.MeshLambertMaterial({ color: SKIN_COLOR });
+  const skinMaterial = new THREE.MeshLambertMaterial({ color: SKIN_COLOR, map: skin });
 
   const root = new THREE.Group();
   root.name = 'gorilla';

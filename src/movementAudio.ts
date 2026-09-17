@@ -1,3 +1,4 @@
+import { SLAP_BY_SURFACE, buildSfxLibrary, type SfxLibrary } from './audioAssets';
 import type { SurfaceTag } from './collision';
 import type { Locomotion } from './locomotion';
 import { tuning, type MovementTuning } from './movementTuning';
@@ -51,6 +52,7 @@ export interface MovementAudio {
 export function buildMovementAudio(
   locomotion: Locomotion,
   t: MovementTuning = tuning,
+  sfx: SfxLibrary = buildSfxLibrary(import.meta.env.BASE_URL),
 ): MovementAudio {
   let ctx: AudioContext | null = null;
   let noise: AudioBuffer | null = null;
@@ -106,6 +108,7 @@ export function buildMovementAudio(
     const c = running();
     if (c === null) return;
     const level = Math.min(1, speed / t.speedCap) * gainScale;
+    if (sfx.play('thud', Math.min(1, level * 1.5) * t.sfxGain, 0.85 + Math.random() * 0.3)) return;
     burst(120, 0.7, 0.25, level, 'lowpass');
     // A short low sine under the noise sells the weight.
     const osc = c.createOscillator();
@@ -124,8 +127,14 @@ export function buildMovementAudio(
   }
 
   function surfaceBurst(speed: number, surface: SurfaceTag, gainScale: number): void {
+    const level = gainScale * Math.min(1, speed / 3);
+    if (
+      running() !== null &&
+      sfx.play(SLAP_BY_SURFACE[surface], level * t.sfxGain, 0.9 + Math.random() * 0.2)
+    )
+      return;
     const p = SLAP_PALETTE[surface];
-    burst(p.freq, p.q, p.decay, p.gain * gainScale * Math.min(1, speed / 3), 'bandpass');
+    burst(p.freq, p.q, p.decay, p.gain * level, 'bandpass');
   }
   locomotion.events.slap = (speed, surface) => surfaceBurst(speed, surface, 1);
   locomotion.events.bump = (speed) => thud(speed, 0.6);
@@ -187,6 +196,25 @@ export function buildMovementAudio(
       tone(freq, seconds, gain);
     },
     chime(kind): void {
+      const sampled: Partial<
+        Record<typeof kind, [Parameters<SfxLibrary['play']>[0], number, number]>
+      > = {
+        correct: ['ui', 0.7, 1.2],
+        wrong: ['ui', 0.6, 0.6],
+        bell: ['bell', 0.8, 1],
+        score: ['coin', 0.8, 1],
+        whoop: ['cartoon', 0.8, 1],
+        cash: ['coin', 0.9, 1.3],
+        thwack: ['punch', 1, 1],
+        pop: ['bubble', 1, 1.4],
+      };
+      const pick = sampled[kind];
+      if (
+        pick !== undefined &&
+        running() !== null &&
+        sfx.play(pick[0], pick[1] * t.sfxGain, pick[2])
+      )
+        return;
       switch (kind) {
         case 'correct':
           tone(660, 0.12, 0.2);
@@ -227,14 +255,26 @@ export function buildMovementAudio(
       }
     },
     bounce(speed, surface): void {
+      const level = 0.7 * Math.min(1, speed / 3) * t.sfxGain;
+      if (
+        running() !== null &&
+        sfx.play(
+          surface === 'metal' ? 'tin' : surface === 'leaves' ? 'bounce_soft' : 'bounce_wood',
+          level,
+          0.9 + Math.random() * 0.2,
+        )
+      )
+        return;
       surfaceBurst(speed, surface, 0.7);
     },
     catch(): void {
+      if (running() !== null && sfx.play('plank', 0.5 * t.sfxGain, 1.3)) return;
       burst(500, 1.5, 0.06, 0.35, 'bandpass');
     },
     resume(): void {
       if (ctx === null) {
         ctx = new AudioContext();
+        sfx.load(ctx);
         noise = makeNoise(ctx);
         const source = ctx.createBufferSource();
         source.buffer = noise;

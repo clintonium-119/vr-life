@@ -225,7 +225,27 @@ const GENERATORS: Record<TileName, (ctx: Ctx, rnd: () => number) => void> = {
   },
 };
 
-/** Draw every tile into a fresh canvas and wrap it as a texture. */
+/** Tiles that have a photographic source under public/textures (CC0, ambientCG). */
+export const IMAGE_TILES: readonly TileName[] = [
+  'brick',
+  'siding',
+  'shingles',
+  'planks',
+  'grass',
+  'asphalt',
+  'concrete',
+  'plaster',
+  'floorboards',
+  'metal',
+  'gravel',
+];
+
+/**
+ * Draw every tile procedurally into a fresh canvas and wrap it as a texture;
+ * then load the photographic tiles and paint each over its slot as it
+ * arrives (the texture re-uploads). The procedural tile is the fallback if
+ * an image never loads, so the world is never untextured.
+ */
 export function buildAtlasTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = ATLAS_SIZE;
@@ -248,6 +268,31 @@ export function buildAtlasTexture(): THREE.CanvasTexture {
   texture.generateMipmaps = true;
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.magFilter = THREE.LinearFilter;
+  texture.anisotropy = 4;
+
+  const base = import.meta.env.BASE_URL;
+  for (const name of IMAGE_TILES) {
+    const img = new Image();
+    img.decoding = 'async';
+    img.onload = () => {
+      const { x, y } = TILES[name];
+      ctx.drawImage(img, x * TILE_PX, y * TILE_PX, TILE_PX, TILE_PX);
+      texture.needsUpdate = true;
+    };
+    img.onerror = () =>
+      console.warn(`[vr-life] atlas: ${name}.jpg did not load; procedural tile kept`);
+    img.src = `${base}textures/${name}.jpg`;
+  }
+  return texture;
+}
+
+/** A tiling texture for the gorillas (fur, skin), tinted by the material colour. */
+export function loadSurfaceTexture(name: 'fur' | 'skin', repeat = 3): THREE.Texture {
+  const texture = new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}textures/${name}.jpg`);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(repeat, repeat);
   texture.anisotropy = 4;
   return texture;
 }

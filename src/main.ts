@@ -21,6 +21,7 @@ import { buildTownLife } from './townLife';
 import { NpcManager } from './npc';
 import { buildConflict } from './conflict';
 import { buildAmbience } from './ambience';
+import { buildMusic } from './music';
 import { DUST_TINT, LEAF_TINT, buildPuffs } from './puffs';
 import { distanceToRoad } from './townPlan';
 
@@ -156,6 +157,8 @@ const puffPos = new THREE.Vector3();
   };
 }
 const ambience = buildAmbience(audio);
+const music = buildMusic(import.meta.env.BASE_URL);
+renderer.domElement.addEventListener('pointerdown', () => music.resume(), { once: true });
 const ambienceCues = { outdoors: true, roadDistance: 0, aboardBus: false };
 
 // Crowd (dev flag `crowd`): scripted gorillas for the frame-cost check.
@@ -244,6 +247,14 @@ renderer.setAnimationLoop((time: number) => {
   ambienceCues.roadDistance = distanceToRoad(playerPos.x, playerPos.z);
   ambienceCues.aboardBus = schoolDay.bus?.aboard(playerFeet) ?? false;
   ambience.update(dt, ambienceCues);
+  music.setMood(
+    conflict !== null && conflict.heat.wanted
+      ? 'chase'
+      : schoolDay.day.phase === 'school'
+        ? 'school'
+        : 'town',
+  );
+  music.update(dt);
   audio.update();
   renderer.render(scene, camera);
   if (perfHud !== null) perfHud.update(time, renderer);
@@ -281,6 +292,7 @@ async function enterVR(): Promise<void> {
   try {
     if (!navigator.xr) throw new Error('WebXR not available');
     audio.resume(); // same gesture as the session request
+    music.resume();
     const session = await navigator.xr.requestSession('immersive-vr', {
       requiredFeatures: ['local-floor'],
     });
