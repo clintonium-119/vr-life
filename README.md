@@ -17,7 +17,8 @@ Other scripts:
 - `npm run typecheck` — TypeScript strict check
 - `npm run lint` — ESLint (typescript-eslint recommended)
 - `npm test` — Vitest unit tests for the pure logic (`*.test.ts` next to the source)
-- `npm run launch` — open the deployed site in Quest Browser over ADB
+- `npm run launch` — open the deployed site in Quest Browser over ADB (`launch:dev` adds `?dev=perf,tools`)
+- `npm run deploy` / `deploy:dev` — `./deploy-vr`: push main, wait for the Pages run, launch on the headset (with the dev flags)
 
 ### Running on the headset
 

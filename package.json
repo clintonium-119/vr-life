@@ -20,7 +20,10 @@
     "smoke:shop": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto&spawn=grocery&day=done' 7 --max-calls 400",
     "smoke:chase": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto&spawn=busStop&heat=1' 12 --require 'officers dispatched'",
     "smoke:fresh": "node scripts/smoke.mjs 'http://localhost:4173/vr-life/?dev=perf,tools&drive=auto&reset=1' 9 --require 'save: fresh profile' --require 'door crossed'",
-    "smoke:qa": "npm run smoke:fresh && npm run smoke:home && npm run smoke:day && npm run smoke:shop && npm run smoke:chase && npm run smoke:town && npm run smoke"
+    "smoke:qa": "npm run smoke:fresh && npm run smoke:home && npm run smoke:day && npm run smoke:shop && npm run smoke:chase && npm run smoke:town && npm run smoke",
+    "launch:dev": "adb shell am start -a android.intent.action.VIEW -d \"'https://clintonium-119.github.io/vr-life/?dev=perf,tools'\"",
+    "deploy": "./deploy-vr",
+    "deploy:dev": "./deploy-vr perf,tools"
   },
   "dependencies": {
     "three": "^0.186.0"
