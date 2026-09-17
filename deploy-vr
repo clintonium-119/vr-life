@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Deploy main to GitHub Pages and open it on the connected Quest.
+#
+#   ./deploy-vr              # push, wait for CI, launch the plain URL
+#   ./deploy-vr perf,tools   # same, with ?dev=<flags>
+#   ./deploy-vr --no-push    # skip push/CI, just launch what is live
+#
+# Extra query params can follow the flags, e.g. ./deploy-vr perf 'spawn=officeRoof&tune=speedCap=16'
+set -euo pipefail
+cd "$(dirname "$0")"
+
+URL='https://clintonium-119.github.io/vr-life/'
+PUSH=1
+FLAGS=''
+EXTRA=''
+for arg in "$@"; do
+  case "$arg" in
+    --no-push) PUSH=0 ;;
+    *=*) EXTRA="${EXTRA:+$EXTRA&}$arg" ;;
+    *) FLAGS="$arg" ;;
+  esac
+done
+
+if ! adb get-state >/dev/null 2>&1; then
+  echo "deploy-vr: no headset on adb (try: adb devices / adb connect <ip>:5555)" >&2
+  exit 1
+fi
+
+if [ "$PUSH" = 1 ]; then
+  branch=$(git rev-parse --abbrev-ref HEAD)
+  if [ "$branch" != main ]; then
+    echo "deploy-vr: on '$branch'; Pages deploys from main. Merge first or use --no-push." >&2
+    exit 1
+  fi
+  if [ -n "$(git status --porcelain)" ]; then
+    echo "deploy-vr: uncommitted changes; commit them first (they would not be deployed)." >&2
+    exit 1
+  fi
+  if [ -n "$(git log origin/main..main --oneline 2>/dev/null)" ] || ! git diff --quiet main origin/main 2>/dev/null; then
+    git push origin main
+    sleep 5
+  else
+    echo "deploy-vr: main already pushed"
+  fi
+  run=$(gh run list --workflow deploy-pages.yml --branch main --limit 1 --json databaseId,status --jq '.[0]')
+  id=$(echo "$run" | jq -r .databaseId)
+  status=$(echo "$run" | jq -r .status)
+  if [ "$status" != completed ]; then
+    echo "deploy-vr: waiting for Pages run $id"
+    gh run watch "$id" --exit-status
+  fi
+fi
+
+QUERY=''
+[ -n "$FLAGS" ] && QUERY="dev=$FLAGS"
+[ -n "$EXTRA" ] && QUERY="${QUERY:+$QUERY&}$EXTRA"
+TARGET="$URL${QUERY:+?$QUERY}"
+echo "deploy-vr: launching $TARGET"
+adb shell am start -a android.intent.action.VIEW -d "'$TARGET'" >/dev/null
