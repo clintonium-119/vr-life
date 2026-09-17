@@ -142,7 +142,8 @@ export function buildLocomotion(
         body.velocity.set(0, 0, 0);
         body.step(dt, true, bodyEvents);
       } else {
-        if (wasAnchored) body.velocity.copy(tracker.velocity);
+        // Letting go launches: the tracked push velocity, boosted.
+        if (wasAnchored) body.velocity.copy(tracker.velocity).multiplyScalar(t.releaseBoost);
         wasAnchored = false;
         bodyTarget(_target);
         body.position.copy(_target);

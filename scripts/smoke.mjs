@@ -93,7 +93,7 @@ const first = positions[0];
 const last = positions[positions.length - 1];
 const moved = first && last ? Math.hypot(last[0] - first[0], last[2] - first[2]) : 0;
 const lastProps = propSamples[propSamples.length - 1] ?? [0, 0];
-const propsOk = propSamples.length === 0 || lastProps[0] >= lastProps[1] - 1;
+const propsOk = propSamples.length === 0 || lastProps[0] >= lastProps[1] - 3; // the thrown ball and anything it knocks
 const lastCalls = callSamples[callSamples.length - 1] ?? 0;
 const callsOk = lastCalls <= maxCalls;
 console.log(

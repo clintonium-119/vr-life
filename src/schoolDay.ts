@@ -85,7 +85,7 @@ export function buildSchoolDay(
       save();
     },
   };
-  buildWristDisplays(rig, progress);
+  const wrists = buildWristDisplays(rig, progress);
 
   // Only the home world has a day; the test space is for movement tuning.
   const isTown = world.kind === 'home';
@@ -177,6 +177,7 @@ export function buildSchoolDay(
           }
         }
       }
+      wrists.update();
       bus?.update(dt, day, _body);
       classrooms?.update(dt);
       gym?.update(dt);

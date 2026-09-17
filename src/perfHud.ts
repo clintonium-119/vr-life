@@ -76,7 +76,7 @@ export function buildPerfHud(
   const geometry = new THREE.PlaneGeometry(0.35, 0.26);
   const quad = new THREE.Mesh(geometry, material);
   quad.name = 'perfHudQuad';
-  quad.position.set(-0.4, -0.28, -0.5); // lower-left of view, ~0.5 m out
+  quad.position.set(0, -0.26, -0.65); // bottom centre of view, ~0.65 m out: inside the headset's FOV
   quad.renderOrder = 999;
   quad.frustumCulled = false; // camera-attached; skip the XR union-frustum cull
   camera.add(quad);

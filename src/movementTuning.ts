@@ -18,20 +18,22 @@ export const tuning = {
   /** Spring rate of the hand hold, 1/s: the rig closes this fraction of the
    * hand error per second (exponential approach). Higher = stiffer, less
    * slip, less weight. */
-  handStiffness: 30,
+  handStiffness: 45,
   /** Lifting the hand this far off the surface (along its normal) releases, m. */
   handReleaseDistance: 0.03,
   /** Slip along the surface beyond this breaks the anchor, m. */
-  handSlipBreak: 0.25,
+  handSlipBreak: 0.6,
   /** Scale on the mean correction when both hands hold (1 = two hands are
    * worth two; brief wants less than double). Dimensionless. */
-  twoHandScale: 0.6,
+  twoHandScale: 0.8,
   /** Hard speed cap, m/s. High enough that reaching it is an achievement. */
   speedCap: 14,
   /** Horizontal velocity decay while grounded with no hand down, 1/s. */
   groundFriction: 2.5,
   /** Time constant of the inherited-velocity average, s. */
-  velocitySmoothing: 0.2,
+  velocitySmoothing: 0.08,
+  /** Release velocity multiplier: the shove a real push gives on letting go. */
+  releaseBoost: 1.3,
   /** Max displacement per collision substep, m (about half the body radius). */
   maxSubstepDistance: 0.15,
   /** Minimum impact speed that counts as a landing (sound), m/s. */

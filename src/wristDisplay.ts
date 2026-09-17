@@ -3,15 +3,22 @@ import type { PlayerRig } from './placeholderPlayer';
 import type { Progress } from './progress';
 import { buildTextQuad, type TextQuad } from './textQuad';
 
-// The only player-facing UI: two small canvas quads on the inner forearms.
-// Left wrist shows money, right wrist shows level. Redrawn on change only.
+// The only player-facing UI: two small canvas quads that hover just above
+// each hand and face the player's eyes, so a glance at either hand reads
+// them however the wrist is turned. Left: money, right: level. Redrawn on
+// change only; repositioned every frame.
 
 export interface WristDisplays {
+  update(): void;
   dispose(): void;
 }
 
+const ABOVE_HAND_M = 0.09;
+const _hand = new THREE.Vector3();
+const _head = new THREE.Vector3();
+
 export function buildWristDisplays(rig: PlayerRig, progress: Progress): WristDisplays {
-  const make = (hand: THREE.Object3D): TextQuad => {
+  const make = (): TextQuad => {
     const quad = buildTextQuad({
       width: 256,
       height: 128,
@@ -21,14 +28,16 @@ export function buildWristDisplays(rig: PlayerRig, progress: Progress): WristDis
       border: '#3d4a5a',
     });
     quad.mesh.name = 'wristDisplay';
-    // On top of the wrist, just behind the mitt, facing up the forearm.
-    quad.mesh.position.set(0, 0.035, 0.11);
-    quad.mesh.rotation.set(-Math.PI / 2 + 0.35, 0, 0);
-    hand.add(quad.mesh);
+    quad.mesh.renderOrder = 10;
+    (rig.root.parent ?? rig.root).add(quad.mesh);
     return quad;
   };
-  const left = make(rig.handLeft);
-  const right = make(rig.handRight);
+  const left = make();
+  const right = make();
+  const quads: [THREE.Object3D, TextQuad][] = [
+    [rig.handLeft, left],
+    [rig.handRight, right],
+  ];
   const drawMoney = (): void =>
     left.draw([{ text: `$ ${progress.money}`, size: 64, align: 'center' }]);
   const drawLevel = (): void =>
@@ -50,6 +59,14 @@ export function buildWristDisplays(rig: PlayerRig, progress: Progress): WristDis
   };
 
   return {
+    update(): void {
+      rig.head.getWorldPosition(_head);
+      for (const [hand, quad] of quads) {
+        hand.getWorldPosition(_hand);
+        quad.mesh.position.set(_hand.x, _hand.y + ABOVE_HAND_M, _hand.z);
+        quad.mesh.lookAt(_head);
+      }
+    },
     dispose(): void {
       left.dispose();
       right.dispose();
