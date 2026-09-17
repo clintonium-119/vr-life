@@ -218,7 +218,7 @@ export function addHouseShell(
       name: `${name}:roof${s < 0 ? 'N' : 'S'}`,
       centre: [cx, B + H + 0.12 + rise / 2, cz + (s * run) / 2],
       size: [spec.width + 0.8, 0.16, slabLen],
-      rotation: [-s * pitch, 0, 0],
+      rotation: [s * pitch, 0, 0],
       tiles: { sides: 'planks', top: 'shingles', bottom: 'planks' },
       surface: 'wood',
       uvScale: 1.5,
